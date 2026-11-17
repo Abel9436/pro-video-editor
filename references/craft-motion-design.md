@@ -34,7 +34,7 @@ Read before designing any talking-head short. For the level of finish by eye, se
 | 3D icons in stages | 3dicons, CC0, `color` style | `scripts/fetch_3dicons.py get --project P gym trophy target` |
 | Line icons to draw on | Lucide, ISC | `scripts/fetch_lineicons.py` |
 | SFX | Freesound CC0 / Kenney | `scripts/fetch_sfx.py` |
-| Music | Mixkit free licence, or the stock search | `scripts/fetch_assets.py search --kind music` |
+| Music | Mixkit Stock Music Free License (social, ads, YouTube; no broadcast, no Content ID) | `scripts/fetch_music.py get --project P --query workout --pick 0` |
 
 Never ship a font or asset inside the skill; every fetch writes its licence into `P/licenses.json`.
 

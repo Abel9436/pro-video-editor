@@ -52,3 +52,34 @@ def test_3dicons_meta_and_png():
     m = I.parse_meta(md)
     assert m["color"].endswith("crow-dynamic-color.png") and m["file-slug"] == "crown"
     assert I.is_png(b"\x89PNG\r\n\x1a\nrest") and not I.is_png(b"<?xml")
+
+
+# ---- fetch_music (Mixkit) --------------------------------------------------------------------------
+LISTING = """<html><a href="/license/#musicFree">licence</a>
+<div data-test-id="audio-player" data-controller="audio-player"
+ data-audio-player-preview-url-value="https://assets.mixkit.co/music/623/623.mp3" data-audio-player-item-id-value="623">
+ <div class="item-grid-card__meta"><h2 class="item-grid-card__title"> Deep Urban </h2>
+ <p class="item-grid-music-preview__author"> by Eugenio Mininni </p>
+ <a class="meta-links__link" data-global--meta-links-target="link" href="/free-stock-music/house/">House</a>
+ <div class="item-grid-music-preview__meta-time" data-test-id="duration"> 4:49 </div></div>
+<div data-test-id="audio-player" data-controller="audio-player"
+ data-audio-player-preview-url-value="https://assets.mixkit.co/music/7/7.mp3" data-audio-player-item-id-value="7">
+ <h2 class="item-grid-card__title"> Short </h2><div data-test-id="duration"> 0:12 </div></div></html>"""
+
+
+def test_music_listing_parses_tracks():
+    import fetch_music as fm
+    items = fm.parse_listing(LISTING)
+    assert [x["id"] for x in items] == ["623", "7"]
+    assert items[0]["title"] == "Deep Urban" and items[0]["author"] == "Eugenio Mininni"
+    assert items[0]["duration_s"] == 289 and items[0]["tags"] == ["House"]
+
+
+def test_music_search_filters_length_and_requires_licence(monkeypatch):
+    import fetch_music as fm
+    monkeypatch.setattr(fm, "fetch", lambda u: LISTING.encode())
+    r = fm.search("workout", 30)
+    assert r["ok"] and [x["id"] for x in r["results"]] == ["623"]
+    monkeypatch.setattr(fm, "fetch", lambda u: LISTING.replace("#musicFree", "").encode())
+    r = fm.search("workout", 30)
+    assert not r["ok"] and all("licence" in t for t in r["tried"])

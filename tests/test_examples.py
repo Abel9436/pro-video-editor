@@ -23,3 +23,8 @@ def test_every_reference_frame_is_indexed():
         n = jpg.name.split("-")[0]
         assert f"| {n}" in readme or f", {n} " in readme, jpg.name
         assert jpg.stat().st_size < 400_000, jpg.name
+
+
+def test_example_falls_back_to_a_sound_of_the_same_role():
+    src = (EX / "snap" / "make_edl.py").read_text(encoding="utf-8")
+    assert "def snd(" in src and "f = snd(f)" in src     # named Freesound ids differ per fetch

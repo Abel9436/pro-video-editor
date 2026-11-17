@@ -282,3 +282,13 @@ A fresh machine could run the pipeline but not reproduce the accepted look: the 
 ## 2026-11-17 - Reference frames ship with the skill
 
 The owner supplied the reference reels as copyright-free visual references and asked for them in the skill. One 12-frame contact sheet per reel (240 px frames, about 100 kB each, 2.4 MB in all) instead of loose frames or the videos: enough to judge finish by eye, small enough for every clone. Only reels the owner actually gave were included; other files in the same download folder were left out.
+
+## 2026-11-17 - Fresh-clone rebuild: three gaps closed
+
+Cloned the repo into an empty folder, made a new venv from requirements.txt alone and rebuilt the accepted snap short from the raw clip (the fresh clone reproduced the first cut exactly). Three things only worked on the original machine:
+
+- The worked example named Freesound ids; a fresh fetch returns other sounds, so six of nine were missing. It now takes the named file when present, else the next sound of the same role from sfx/catalog.json; the music start point falls back to 0 for a shorter bed.
+- Openverse now answers HTTP 401 to anonymous requests with page_size above 20 (measured 2026-11-17: 20 -> 200, 21 -> 401); fetch_assets.py asked for up to 50, so every music search failed. Capped at 20.
+- Openverse has little commercial-safe music (mostly BY-SA), and the original bed had been fetched from Mixkit by hand. New fetch_music.py lists Mixkit tag/mood/genre pages and downloads with the licence checked on the day (listing links #musicFree, licence page reads "Stock Music Free License"); the restrictions (no broadcast, games, remixes, Content ID) go into licenses.json.
+
+premium-design.md now says its measured numbers are not targets where the owner rejected them (text on screen ~95 %, UI cards as default, unducked music) and defers to craft-motion-design.md.

@@ -24,9 +24,14 @@ not the numbers.
 Assets this script expects in the project, all fetched with their licences:
   fetch_fontet.py get --project P Menbere Zemach "Bela Bereka"
   fetch_fonts.py (Anton, JetBrains Mono)       fetch_3dicons.py get --project P gym target thumb-down trophy
-  fetch_sfx.py (whoosh, marker, tick, impact, shutter, thud)   music: any licensed 90-100 bpm bed as music/bed.mp3
+  fetch_sfx.py --project P --plan plan.json  with {"whoosh": "fast whoosh", "marker": "marker pen", "tick": "ui tick",
+      "impact": "impact hit", "shutter": "camera shutter", "thud": "thud"}
+  music: any licensed 90-100 bpm bed saved as music/bed.mp3 (fetch_music.py get --project P --query workout --pick 0)
+The SFX lines name the sounds used on the delivered video; when a fresh fetch returned other sounds,
+each line takes a sound of the same role from P/sfx/catalog.json instead.
 """
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -162,17 +167,36 @@ T["captions"] = None
 T["graphics"], T["broll"] = [], []
 
 # ---- music: a 92 bpm percussive bed, from its loudest section ----------------------------------
-T["music"] = [{"asset": "file:music/bed.mp3", "at_f": 0, "in_f": round(19.7 * FPS), "dur_f": END, "gain_db": -17, "end": "hit",
+try:  # start on the delivered bed's loudest section, if this bed is long enough for it
+    BED_S = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                  str(P / "music/bed.mp3")], capture_output=True, text=True).stdout.strip())
+except (OSError, ValueError):
+    BED_S = 0.0
+T["music"] = [{"asset": "file:music/bed.mp3", "at_f": 0, "in_f": round(19.7 * FPS) if BED_S >= 19.7 + END / FPS else 0, "dur_f": END, "gain_db": -17, "end": "hit",
                "duck": {"under": "dialogue", "depth_db": -20, "attack_ms": 60, "release_ms": 300},
                "reason": "a 92 bpm percussive bed for a gym coach, started on its loudest section"}]
 
 cat = {s["file"]: s for s in json.loads((P / "sfx/catalog.json").read_text(encoding="utf-8"))["sounds"]}
 pk = lambda f: round((cat.get(f, {}).get("peak_s") or 0) * FPS)  # noqa: E731
 sfx = []
+_used: dict[str, int] = {}
+
+
+def snd(f: str) -> str:
+    """The named sound if the project has it, else the next unused sound of the same role (the name's prefix)."""
+    if (P / "sfx" / f).exists():
+        return f"sfx/{f}"
+    role = f.split("_")[0]
+    alts = sorted(k for k in cat if Path(k).name.startswith(role + "_"))
+    if not alts:
+        raise SystemExit(f"no '{role}' sound in sfx/catalog.json: run fetch_sfx.py --project P --role {role} --query ...")
+    n = _used.get(role, 0)
+    _used[role] = n + 1
+    return alts[n % len(alts)]
 
 
 def S(f, at, db, role, why, dur=None):
-    f = f"sfx/{f}"
+    f = snd(f)
     x = {"asset": f"file:{f}", "at_f": max(0, at - pk(f)), "gain_db": db, "role": role, "reason": why}
     if dur:
         x["dur_f"] = dur

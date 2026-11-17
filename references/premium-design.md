@@ -10,12 +10,22 @@ reference shorts, all 720x1280 at 30 fps, analysed frame by frame:
 The numbers come from `fingerprint.py measure`. The techniques come from 30 fps frame strips.
 Nothing from the references is copied into any output.
 
+**Read with the owner's verdicts (2026-11-17).** These are what three references measure, not targets.
+Applied literally they produced edits the owner rejected: text and HUD on screen most of the time and
+UI-card scenes read as "generic" and "AI slop". The house style in [craft-motion-design.md](craft-motion-design.md)
+overrules this page wherever they differ, and `scripts/slop_check.py` sets the limits. In particular:
+
+- Text on screen: captions follow speech; designed graphics only where they explain an idea, never wall to wall.
+- UI objects (phones, chat bubbles, notification stacks) are one tool among many, not the default scene; the accepted default is the footage folding into a 3D card over a built set.
+- Music is always ducked under speech, to -20 dB.
+- Type: the fonts below are the Latin defaults; Amharic uses the font.et fonts, and every video gets its own palette.
+
 ## Measured numbers
 
 | Field | Alimarel | Artzen | EarnEdits | Use as |
 |---|---|---|---|---|
-| Text on screen (% of frames) | 90.6 | 96.7 | 95.9 | **text is almost always present** |
-| Designed text events per min | 53.7 | 66.5 | 58.1 | about one new text event per second |
+| Text on screen (% of frames) | 90.6 | 96.7 | 95.9 | captions follow speech; designed text only where it explains (see above) |
+| Designed text events per min | 53.7 | 66.5 | 58.1 | measured, not a target: the owner rejected this density |
 | Words per caption card (median) | phrase titles | 3.0 | 4.0 | `PHRASE_MAX_WORDS = 3` |
 | Visual change, re-hook every (s) | 1.2 | 0.77 | 0.5 | something new every 0.5 to 1.2 s |
 | Longest stretch with no change (s) | 5.4 | 6.1 | 3.5 | keep under about 5 s |
@@ -25,7 +35,7 @@ Nothing from the references is copied into any output.
 | Face on screen (%) | 62.5 | 100 (split screen) | 0 | the speaker is one layer of several |
 | B-roll ratio | 0.375 | split screen | all graphics | |
 | Integrated loudness | −14.1 LUFS | −14.5 LUFS | −14.4 LUFS | −14 LUFS master |
-| Music bed | yes, no ducking | yes, 1 dB duck | yes, 6 dB duck | bed always present |
+| Music bed | yes, no ducking | yes, 1 dB duck | yes, 6 dB duck | bed always present; this skill ducks it to -20 dB under speech |
 | Strong SFX per min | 9.9 | 14.6 | 13.3 | plus quieter UI ticks |
 | Titles with an SFX (%) | 13 | 22 | 23 | not every title needs a sound |
 
@@ -43,7 +53,8 @@ Nothing from the references is copied into any output.
    - a website search box (Artzen);
    - a tracklist or social post (EarnEdits).
    
-   A phrase shown as a UI object reads as a scene, not a subtitle.
+   A phrase shown as a UI object reads as a scene, not a subtitle. Use it sparingly: a video built mostly
+   of UI cards was rejected as "generic".
 3. **Depth.** Planes are tilted in 3D and drift slowly. Foreground objects are defocused and sweep across: EarnEdits uses hazard tape and blurred coins. Background objects are blurred, and focus racks onto the subject.
 4. **One accent on a dark stage**, with light/paper scenes for contrast changes:
    - Alimarel: lime on near-black;
@@ -69,7 +80,8 @@ Nothing from the references is copied into any output.
 
 ## How the skill does it
 
-When the EDL has a `design` block, render.py runs `design_pass`. Remotion's `Design` composition then
+HyperFrames is the default design engine now (`lib/hf_design.py`, `lib/hf_explainer.py` for the 3D
+stages); the Remotion parts below are the alternative engine (`design.engine: "remotion"`). When the EDL has a `design` block, render.py runs `design_pass`. Remotion's `Design` composition then
 builds the finished picture around the clean speaker cut, using the project folder as its public dir.
 The parts live in `remotion/src/design/`:
 

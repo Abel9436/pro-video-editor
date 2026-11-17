@@ -97,7 +97,8 @@ def search_catalog(kind: str, query: str) -> list[dict]:
 
 def search_openverse(kind: str, query: str, limit: int, commercial: bool) -> list[dict]:
     ep = "audio" if kind in ("music", "sfx") else "images"
-    q = {"q": query, "page_size": min(50, limit * 3), "license_type": "commercial" if commercial else "all"}
+    q = {"q": query, "page_size": min(20, limit * 3),  # anonymous requests above 20 get HTTP 401 (2026-11-17)
+          "license_type": "commercial" if commercial else "all"}
     if kind in ("music", "sfx"):
         q["category"] = "music" if kind == "music" else "sound_effect"
     d = _get(f"https://api.openverse.org/v1/{ep}/?{urllib.parse.urlencode(q)}")
@@ -292,7 +293,8 @@ def main() -> None:
                 log(f"  [{k}] {r.get('title')!s:.50} | {r.get('license')} {r.get('license_version') or ''} | "
                     f"{r.get('duration_s') or ''} | {r.get('origin')}")
             if not res["results"]:
-                log("  nothing passed the license and quality filters: leave the slot empty or try other words")
+                log("  nothing passed the license and quality filters: leave the slot empty or try other words"
+                    + ("; for music beds use scripts/fetch_music.py (Mixkit)" if a.kind == "music" else ""))
         else:
             res = read_json(a.src)
             if not (0 <= a.pick < len(res["results"])):
