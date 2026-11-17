@@ -65,6 +65,10 @@ def card_js(sel: str, s0: float, s1: float, c: dict, W: int, H: int) -> list[str
     full = f'scale: 1, x: 0, y: 0, rotationY: 0, rotationX: 0, borderRadius: 0, boxShadow: "0 0 0 0 rgba(0,0,0,0)"'
     card = (f'scale: {sc}, x: {x:.1f}, y: {y:.1f}, rotationY: {ry}, rotationX: {rx}, borderRadius: {rad:.0f}, '
             f'boxShadow: "0 60px 140px rgba(0,0,0,0.75), 0 0 0 {3 / sc:.0f}px rgba(255,255,255,0.14)"')
+    cy, half_h, half_w = H / 2 + y, H * sc / 2, W * sc / 2
+    if cy - half_h < 0 or cy + half_h > H or W / 2 + x - half_w < 0 or W / 2 + x + half_w > W:
+        raise ValueError(f"camera card leaves the frame: centre ({W / 2 + x:.0f}, {cy:.0f}) px, size "
+                         f"{2 * half_w:.0f}x{2 * half_h:.0f} px in {W}x{H}; lower scale or move x/y toward 0")
     hold = max(0.05, (s1 - out) - (s0 + inn))
     return [f'tl.fromTo("{sel}", {{ {full}, transformOrigin: "50% 50%", transformPerspective: {PERSP} }}, '
             f'{{ {card}, duration: {inn}, ease: "expo.inOut", immediateRender: false }}, {s0:.3f});',
