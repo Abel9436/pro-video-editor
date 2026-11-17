@@ -1,0 +1,17 @@
+{
+  "about": "Benchmark projects. Footage stays outside the repo (the user's own media); each entry points at it and at a frozen paper edit. Target: 5 now, growing to 30-50, covering every video type.",
+  "projects": [
+    {"name": "talking_head_business_short", "type": "short_form", "platform": "shorts",
+     "footage": "../work/romance/footage", "paper": "evals/papers/talking_head_business_short.json",
+     "note": "60 s pre-edited 720p talking head with a music bed; the build's end-to-end test"}
+  ],
+  "needed": [
+    {"type": "podcast_long", "want": "2-camera podcast, 20+ min, separate mics if possible"},
+    {"type": "vlog", "want": "a day of handheld clips, 10+ files"},
+    {"type": "cinematic_travel", "want": "scenery clips with camera movement, little speech, plus a music track"},
+    {"type": "documentary", "want": "an interview plus B-roll"},
+    {"type": "product_ad", "want": "product shots and a 20-30 s brief"},
+    {"type": "gaming_reaction", "want": "screen capture plus facecam"},
+    {"type": "explainer_3d", "want": "a narration track plus visuals"}
+  ]
+}

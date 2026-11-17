@@ -1,0 +1,299 @@
+{
+  "name": "pinterest_edit_refs",
+  "type": "short_form",
+  "sources": 13,
+  "measured_on": "2026-11-15",
+  "measured": true,
+  "source_files": [
+    "Pinterest_video_292593307067902036_292593307067902036.fV_HLSV4-1200.mp4",
+    "Pinterest_video_292593307068025732_292593307068025732.fV_HLSV4-1421.mp4",
+    "No_motion_design_experience_No_problem_Jitter.video_is_a_free_website_pa_633178028908196413.fV_HLSV4-740.mp4",
+    "Pinterest_video_1086986060079822211_1086986060079822211.fV_HLSV4-764.mp4",
+    "Pinterest_video_1086986060089481965_1086986060089481965.fV_HLSV4-753.mp4",
+    "Cinematic_Podcast_Edit_Podcast_Editing_989032768191735412.fV_HLSV3_MOBILE-932.mp4",
+    "Cinematic_AI_Motion_Graphics_Futuristic_After_Effects_Edit_628604060534847487.fV_HLSV3_MOBILE-797.mp4",
+    "Pinterest_video_907264287466795675_907264287466795675.fV_HLSV4-345.mp4",
+    "Pinterest_video_730849845820418679_730849845820418679.fV_HLSV4-933.mp4",
+    "Pinterest_video_1134555331144313780_1134555331144313780.fV_HLSV3_MOBILE-803.mp4",
+    "Pinterest_video_1016476578779546637_1016476578779546637.fV_HLSV4-807.mp4",
+    "Reels_Editing_Tutorial_Clean_Minimal_Style_953637289872814725.fV_HLSV3_MOBILE-1369.mp4",
+    "Pinterest_video_958422364469848570_958422364469848570.fV_HLSV4-471.mp4"
+  ],
+  "fields": {
+    "cuts_per_min": {
+      "med": 19.8,
+      "lo": 12.02,
+      "hi": 28.28,
+      "n": 13
+    },
+    "shot_len_s.med": {
+      "med": 2.017,
+      "lo": 1.387,
+      "hi": 5.088,
+      "n": 13
+    },
+    "shot_len_cv": {
+      "med": 0.69,
+      "lo": 0.404,
+      "hi": 1.134,
+      "n": 13
+    },
+    "punch_in_every_s": {
+      "med": 21.22,
+      "lo": 19.676,
+      "hi": 44.028,
+      "n": 3
+    },
+    "punch_in_scale": {
+      "med": 1.252,
+      "lo": 1.252,
+      "hi": 1.252,
+      "n": 1
+    },
+    "zooms_per_min": {
+      "med": 15.6,
+      "lo": 8.08,
+      "hi": 62.32,
+      "n": 13
+    },
+    "text.cards_per_min": {
+      "med": 80.9,
+      "lo": 66.06,
+      "hi": 95.22,
+      "n": 13
+    },
+    "text.caption_cards_per_min": {
+      "med": 35.3,
+      "lo": 0.0,
+      "hi": 73.96,
+      "n": 13
+    },
+    "text.titles_per_min": {
+      "med": 35.3,
+      "lo": 11.78,
+      "hi": 66.26,
+      "n": 13
+    },
+    "text.words_per_card.med": {
+      "med": 3.0,
+      "lo": 2.0,
+      "hi": 4.0,
+      "n": 10
+    },
+    "text.text_screen_pct": {
+      "med": 95.0,
+      "lo": 87.42,
+      "hi": 100.0,
+      "n": 13
+    },
+    "text.caption_coverage_pct": {
+      "med": 38.5,
+      "lo": 0.0,
+      "hi": 76.24,
+      "n": 13
+    },
+    "color.luma.med": {
+      "med": 26.45,
+      "lo": 15.98,
+      "hi": 78.14,
+      "n": 13
+    },
+    "color.contrast.med": {
+      "med": 20.1,
+      "lo": 16.08,
+      "hi": 22.7,
+      "n": 13
+    },
+    "color.saturation.med": {
+      "med": 27.2,
+      "lo": 7.12,
+      "hi": 53.56,
+      "n": 13
+    },
+    "color.warmth.med": {
+      "med": 1.665,
+      "lo": -1.006,
+      "hi": 11.665,
+      "n": 13
+    },
+    "broll_ratio": {
+      "med": 0.288,
+      "lo": 0.001,
+      "hi": 0.9,
+      "n": 12
+    },
+    "face_time_pct": {
+      "med": 67.6,
+      "lo": 5.56,
+      "hi": 99.46,
+      "n": 13
+    },
+    "speech_pct": {
+      "med": 84.9,
+      "lo": 79.28,
+      "hi": 94.36,
+      "n": 13
+    },
+    "words_per_min": {
+      "med": 214.0,
+      "lo": 181.42,
+      "hi": 242.76,
+      "n": 13
+    },
+    "audio.ducking_db": {
+      "med": 0.4,
+      "lo": -2.68,
+      "hi": 7.36,
+      "n": 13
+    },
+    "audio.sfx_per_min": {
+      "med": 9.9,
+      "lo": 3.86,
+      "hi": 18.44,
+      "n": 13
+    },
+    "audio.cuts_with_sfx_pct": {
+      "med": 13.8,
+      "lo": 0.0,
+      "hi": 37.08,
+      "n": 12
+    },
+    "audio.cuts_on_beat_pct": {
+      "med": 37.5,
+      "lo": 13.64,
+      "hi": 55.38,
+      "n": 13
+    },
+    "audio.cuts_on_beat_chance_pct": {
+      "med": 35.1,
+      "lo": 30.04,
+      "hi": 39.84,
+      "n": 13
+    },
+    "audio.lufs": {
+      "med": -14.4,
+      "lo": -18.38,
+      "hi": -14.1,
+      "n": 13
+    },
+    "audio.bpm": {
+      "med": 125.0,
+      "lo": 110.29,
+      "hi": 142.17,
+      "n": 13
+    },
+    "audio.silence_pct": {
+      "med": 0.0,
+      "lo": 0.0,
+      "hi": 0.78,
+      "n": 13
+    },
+    "structure.hook_len_s": {
+      "med": 4.03,
+      "lo": 0.742,
+      "hi": 6.388,
+      "n": 13
+    },
+    "structure.rehook_every_s": {
+      "med": 0.9,
+      "lo": 0.526,
+      "hi": 1.72,
+      "n": 13
+    },
+    "structure.max_no_change_s": {
+      "med": 4.47,
+      "lo": 3.624,
+      "hi": 8.644,
+      "n": 13
+    },
+    "structure.loop_similarity": {
+      "med": 0.347,
+      "lo": -0.031,
+      "hi": 0.783,
+      "n": 13
+    },
+    "duration_s": {
+      "med": 34.87,
+      "lo": 17.474,
+      "hi": 48.61,
+      "n": 13
+    }
+  },
+  "transition_mix": {
+    "cut": 0.564,
+    "dissolve": 0.203,
+    "fade": 0.02,
+    "whip": 0.135,
+    "zoom": 0.078
+  },
+  "modes": {
+    "text.position": "center",
+    "text.animation": "on_before_sample",
+    "structure.ending": "text_card",
+    "aspect": "9:16"
+  },
+  "music_present_pct": 100.0,
+  "hypotheses": [
+    {
+      "field": "audio.cuts_with_sfx_pct",
+      "high_performers_med": 0.0,
+      "others_med": 21.3,
+      "effect": 1.23,
+      "status": "hypothesis: not supported by evals yet"
+    },
+    {
+      "field": "color.contrast.med",
+      "high_performers_med": 21.55,
+      "others_med": 17.75,
+      "effect": 0.8,
+      "status": "hypothesis: not supported by evals yet"
+    },
+    {
+      "field": "color.saturation.med",
+      "high_performers_med": 33.025,
+      "others_med": 19.675,
+      "effect": 0.78,
+      "status": "hypothesis: not supported by evals yet"
+    },
+    {
+      "field": "audio.lufs",
+      "high_performers_med": -15.7,
+      "others_med": -14.15,
+      "effect": 0.78,
+      "status": "hypothesis: not supported by evals yet"
+    },
+    {
+      "field": "text.caption_coverage_pct",
+      "high_performers_med": 49.75,
+      "others_med": 27.85,
+      "effect": 0.7,
+      "status": "hypothesis: not supported by evals yet"
+    },
+    {
+      "field": "words_per_min",
+      "high_performers_med": 196.8,
+      "others_med": 218.15,
+      "effect": 0.63,
+      "status": "hypothesis: not supported by evals yet"
+    }
+  ],
+  "performance_metric": "repost_count",
+  "qualitative": [
+    "Kinetic typography carries the edit: big headline words with one keyword in an accent colour or a contrasting serif/script face",
+    "Speakers framed mid-chest, centred, often cut out over a dark or clean-white graphic background",
+    "Visual nouns get a graphic: phone/UI mock-ups, logos, numbers ('No. 3') appear as the word is said",
+    "High contrast looks: near-black or near-white backgrounds, saturated accent colour; skin kept natural",
+    "Hard cuts dominate; dissolves and whips are used inside motion-graphics sequences, rarely between speaker shots"
+  ],
+  "platform": "shorts",
+  "caveats": [
+    "Measured on 13 vertical Pinterest shorts (17-50 s); several are editing tutorials or motion-graphics showreels, so text density and zoom counts run higher than a plain talking-head short can or should reach",
+    "Performance metric is repost_count (no view counts available); hypotheses below are weak (13 sources)",
+    "ducking_db is a band-energy proxy, sfx_per_min is an upper bound (music hits on cuts count), downbeats are heuristic"
+  ],
+  "captions": {
+    "words_per_card": 3,
+    "position": "center",
+    "highlight": true
+  }
+}

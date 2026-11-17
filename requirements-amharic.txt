@@ -1,0 +1,6 @@
+# Optional: Amharic transcription (scripts/transcribe_am.py, lib/amharic_asr.py).
+# CPU torch: pip install -r requirements-amharic.txt --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0
+torchaudio==2.11.0
+transformers==5.16.1
+uroman==1.3.1.1

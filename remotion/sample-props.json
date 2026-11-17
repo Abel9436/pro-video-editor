@@ -1,0 +1,16 @@
+{
+  "fps": 30, "width": 1080, "height": 1920, "durationInFrames": 120,
+  "cards": [
+    {"s_f": 0, "e_f": 20, "words": [{"w": "Insider", "t_s": 0, "t_e": 10}, {"w": "knowledge", "t_s": 10, "t_e": 20}]},
+    {"s_f": 20, "e_f": 45, "words": [{"w": "is", "t_s": 20, "t_e": 25}, {"w": "behind", "t_s": 25, "t_e": 35}, {"w": "a", "t_s": 35, "t_e": 37}]},
+    {"s_f": 45, "e_f": 70, "words": [{"w": "ሰላም", "t_s": 45, "t_e": 60}, {"w": "ጤና", "t_s": 60, "t_e": 70}]}
+  ],
+  "graphics": [
+    {"component": "Title", "at_f": 0, "dur_f": 45, "props": {"text": "There's no secret shortcut", "y": 0.45}},
+    {"component": "Callout", "at_f": 50, "dur_f": 30, "props": {"text": "Insider knowledge", "y": 0.5}},
+    {"component": "LowerThird", "at_f": 80, "dur_f": 40, "props": {"text": "Speaker Name", "sub": "Founder"}},
+    {"component": "ProgressBar", "at_f": 0, "dur_f": 120, "props": {}},
+    {"component": "Title3D", "at_f": 85, "dur_f": 35, "props": {"text": "Chapter 2", "y": 0.3}}
+  ],
+  "captions": {"template": "pop_3word", "highlight": "keyword", "keywords": ["insider", "knowledge"], "safe_zone": "shorts"}
+}

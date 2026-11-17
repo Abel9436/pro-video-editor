@@ -1,0 +1,93 @@
+{
+  "name": "gaming_reaction_defaults",
+  "type": "gaming_reaction",
+  "platform": "youtube",
+  "measured": false,
+  "sources": 0,
+  "measured_on": null,
+  "fields": {
+    "cuts_per_min": {
+      "med": 16,
+      "lo": 8,
+      "hi": 30,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "shot_len_s.med": {
+      "med": 3,
+      "lo": 1.5,
+      "hi": 6,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "zooms_per_min": {
+      "med": 8,
+      "lo": 3,
+      "hi": 16,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.sfx_per_min": {
+      "med": 8,
+      "lo": 3,
+      "hi": 15,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.lufs": {
+      "med": -14,
+      "lo": -15,
+      "hi": -12,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.hook_len_s": {
+      "med": 8,
+      "lo": 3,
+      "hi": 15,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.max_no_change_s": {
+      "med": 5,
+      "lo": 3,
+      "hi": 8,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "duration_s": {
+      "med": 600,
+      "lo": 180,
+      "hi": 1500,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "face_time_pct": {
+      "med": 90,
+      "lo": 60,
+      "hi": 100,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    }
+  },
+  "transition_mix": {
+    "cut": 0.85,
+    "zoom": 0.1,
+    "whip": 0.05
+  },
+  "modes": {
+    "aspect": "16:9"
+  },
+  "music_present_pct": 60,
+  "captions": {
+    "template": "bold_1word",
+    "position": "top"
+  },
+  "qualitative": [
+    "Gameplay full screen with a facecam layout; zoom and slow-mo on the moment; cut the waiting; meme inserts and SFX only on reactions that earn them."
+  ],
+  "caveats": [
+    "STARTING DEFAULTS, not measured: every number here is an editor's rule of thumb to start from. Replace with fingerprint.py aggregate on 10+ reference videos of this type (references/video-types.md).",
+    "Eval project needed: footage the user owns, edited by this style, scored by qc.py + virality_score.py."
+  ]
+}

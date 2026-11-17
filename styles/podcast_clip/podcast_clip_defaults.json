@@ -1,0 +1,113 @@
+{
+  "name": "podcast_clip_defaults",
+  "type": "podcast_clip",
+  "platform": "shorts",
+  "measured": false,
+  "sources": 0,
+  "measured_on": null,
+  "fields": {
+    "cuts_per_min": {
+      "med": 14,
+      "lo": 8,
+      "hi": 24,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "shot_len_s.med": {
+      "med": 3,
+      "lo": 1.5,
+      "hi": 5,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "punch_in_every_s": {
+      "med": 4,
+      "lo": 2,
+      "hi": 7,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "punch_in_scale": {
+      "med": 1.12,
+      "lo": 1.08,
+      "hi": 1.2,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "zooms_per_min": {
+      "med": 10,
+      "lo": 5,
+      "hi": 18,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "text.words_per_card.med": {
+      "med": 3,
+      "lo": 1,
+      "hi": 4,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "text.caption_coverage_pct": {
+      "med": 95,
+      "lo": 80,
+      "hi": 100,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.sfx_per_min": {
+      "med": 4,
+      "lo": 1,
+      "hi": 8,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.lufs": {
+      "med": -14,
+      "lo": -15,
+      "hi": -13,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.hook_len_s": {
+      "med": 3,
+      "lo": 1,
+      "hi": 6,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.max_no_change_s": {
+      "med": 4,
+      "lo": 2,
+      "hi": 5,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "duration_s": {
+      "med": 45,
+      "lo": 20,
+      "hi": 90,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    }
+  },
+  "transition_mix": {
+    "cut": 0.9,
+    "zoom": 0.1
+  },
+  "modes": {
+    "aspect": "9:16"
+  },
+  "music_present_pct": 30,
+  "captions": {
+    "template": "pop_3word",
+    "position": "center"
+  },
+  "qualitative": [
+    "One self-contained point from the long episode, opening on its strongest line; reframed vertically on the active speaker; animated captions with keyword pops; ends on the punchline, no outro."
+  ],
+  "caveats": [
+    "STARTING DEFAULTS, not measured: every number here is an editor's rule of thumb to start from. Replace with fingerprint.py aggregate on 10+ reference videos of this type (references/video-types.md).",
+    "Eval project needed: footage the user owns, edited by this style, scored by qc.py + virality_score.py."
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "name": "podcast_long_defaults",
+  "type": "podcast_long",
+  "platform": "youtube",
+  "measured": false,
+  "sources": 0,
+  "measured_on": null,
+  "fields": {
+    "cuts_per_min": {
+      "med": 6,
+      "lo": 3,
+      "hi": 10,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "shot_len_s.med": {
+      "med": 8,
+      "lo": 4,
+      "hi": 15,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "zooms_per_min": {
+      "med": 0.5,
+      "lo": 0,
+      "hi": 2,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.sfx_per_min": {
+      "med": 0,
+      "lo": 0,
+      "hi": 1,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.lufs": {
+      "med": -16,
+      "lo": -16,
+      "hi": -14,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.hook_len_s": {
+      "med": 60,
+      "lo": 20,
+      "hi": 120,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.max_no_change_s": {
+      "med": 20,
+      "lo": 10,
+      "hi": 40,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "duration_s": {
+      "med": 3600,
+      "lo": 1200,
+      "hi": 7200,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "text.caption_coverage_pct": {
+      "med": 0,
+      "lo": 0,
+      "hi": 0,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    }
+  },
+  "transition_mix": {
+    "cut": 1.0
+  },
+  "modes": {
+    "aspect": "16:9"
+  },
+  "music_present_pct": 10,
+  "captions": {
+    "template": null
+  },
+  "qualitative": [
+    "Camera follows the speaker with a short delay; wide shot on cross-talk and laughter; minimal effects; a cold open of the best 30-60 s; chapters every topic change; speech loudness -16 LUFS (spoken-word convention)."
+  ],
+  "caveats": [
+    "STARTING DEFAULTS, not measured: every number here is an editor's rule of thumb to start from. Replace with fingerprint.py aggregate on 10+ reference videos of this type (references/video-types.md).",
+    "Eval project needed: footage the user owns, edited by this style, scored by qc.py + virality_score.py."
+  ]
+}

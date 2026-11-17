@@ -1,0 +1,13 @@
+# Downloaded or generated at run time: nothing third-party ships in the repo
+assets/fonts/
+assets/cache/
+assets/luts/generated/
+assets/library/*
+!assets/library/README.md
+assets/local/
+remotion/node_modules/
+remotion/out/
+evals/results/
+__pycache__/
+.pytest_cache/
+*.pyc

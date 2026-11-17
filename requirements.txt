@@ -1,0 +1,17 @@
+# Analysis and orchestration. Pinned to versions known to install on Python 3.11-3.13.
+numpy>=1.26
+scipy>=1.11
+opencv-python>=4.9,<5   # OpenCV 5 removed the Haar cascades used for eye/smile checks
+pillow>=10.0
+soundfile>=0.12
+pyloudnorm>=0.1.1
+librosa>=0.10.2
+scenedetect>=0.6.4
+faster-whisper>=1.0.3
+jsonschema>=4.21
+colour-science>=0.4.6   # camera log curves and gamuts (lib/logcam.py)
+pytest>=8.0
+rapidocr_onnxruntime>=1.2   # on-screen text in fingerprint.py
+opentimelineio>=0.17        # export_timeline.py
+otio-fcpx-xml-adapter>=1.0  # FCPXML (Final Cut, Resolve)
+otio-fcp-adapter>=1.0       # FCP7 XML (Premiere, Resolve)

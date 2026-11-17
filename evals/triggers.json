@@ -1,0 +1,35 @@
+{
+  "about": "Trigger tests for the skill description: prompts that should and should not activate pro-video-editor. Run them through the skill-creator description optimizer or by hand after any change to the SKILL.md description.",
+  "should_trigger": [
+    "Edit these clips into a 30 second YouTube Short with captions",
+    "I have 40 minutes of podcast footage from two cameras, cut it into a full episode and 5 clips",
+    "Turn my vlog footage from Lalibela into a 10 minute video with music",
+    "Here are reference videos from an editor I like, learn their style and edit my talking head like that",
+    "Make this interview into a documentary-style piece with lower thirds",
+    "Cut the dead air and filler words out of this recording and add captions",
+    "Add Amharic captions to this video and export SRT",
+    "Can you make this product footage into a 20 second Reels ad?",
+    "Edit this video, make it more engaging for TikTok",
+    "Export my edit as a timeline I can open in DaVinci Resolve",
+    "This cut is too slow in the middle, make it punchier",
+    "Score this edit for retention and tell me what to fix",
+    "Color correct and match these shots, then grade warm",
+    "Analyse these 10 reference shorts and tell me their pacing, caption style and SFX density"
+  ],
+  "should_not_trigger": [
+    "Generate a video of a cat surfing from this prompt",
+    "Write a script for a YouTube video about budgeting",
+    "Make me a thumbnail image in the MrBeast style",
+    "Convert this mp4 to gif",
+    "What's the best camera for vlogging under $500?",
+    "Summarise this YouTube link",
+    "Build a React video player component",
+    "Make an animated explainer from scratch with no footage",
+    "Transcribe this audio file to text",
+    "Compress this video so it's under 25 MB"
+  ],
+  "notes": [
+    "Borderline by design: 'Transcribe this audio' and 'compress this video' are single FFmpeg/Whisper tasks, not editing; the skill should not load for them.",
+    "'Make an animated explainer from scratch' is generation from nothing, which the description excludes."
+  ]
+}

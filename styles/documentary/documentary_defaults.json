@@ -1,0 +1,100 @@
+{
+  "name": "documentary_defaults",
+  "type": "documentary",
+  "platform": "youtube",
+  "measured": false,
+  "sources": 0,
+  "measured_on": null,
+  "fields": {
+    "cuts_per_min": {
+      "med": 7,
+      "lo": 3,
+      "hi": 12,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "shot_len_s.med": {
+      "med": 5,
+      "lo": 3,
+      "hi": 10,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "broll_ratio": {
+      "med": 0.55,
+      "lo": 0.35,
+      "hi": 0.8,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "zooms_per_min": {
+      "med": 2,
+      "lo": 0,
+      "hi": 4,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.sfx_per_min": {
+      "med": 4,
+      "lo": 1,
+      "hi": 8,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "audio.lufs": {
+      "med": -16,
+      "lo": -18,
+      "hi": -14,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.hook_len_s": {
+      "med": 45,
+      "lo": 20,
+      "hi": 90,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "structure.max_no_change_s": {
+      "med": 12,
+      "lo": 6,
+      "hi": 20,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "duration_s": {
+      "med": 1200,
+      "lo": 300,
+      "hi": 3600,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    },
+    "text.caption_coverage_pct": {
+      "med": 0,
+      "lo": 0,
+      "hi": 100,
+      "n": 0,
+      "basis": "STARTING DEFAULT"
+    }
+  },
+  "transition_mix": {
+    "cut": 0.75,
+    "dissolve": 0.2,
+    "fade": 0.05
+  },
+  "modes": {
+    "aspect": "16:9"
+  },
+  "music_present_pct": 80,
+  "captions": {
+    "template": "clean_line",
+    "position": "bottom"
+  },
+  "qualitative": [
+    "Slow pace with held moments; evidence B-roll for every factual claim; lower thirds for every interviewee; dissolves for time passing; sound design carries the archive."
+  ],
+  "caveats": [
+    "STARTING DEFAULTS, not measured: every number here is an editor's rule of thumb to start from. Replace with fingerprint.py aggregate on 10+ reference videos of this type (references/video-types.md).",
+    "Eval project needed: footage the user owns, edited by this style, scored by qc.py + virality_score.py."
+  ]
+}

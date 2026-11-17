@@ -1,0 +1,25 @@
+{
+  "name": "pro-video-editor-remotion",
+  "private": true,
+  "description": "Optional motion-graphics engine for pro-video-editor: captions, titles, lower thirds, callouts, progress bars and 3D titles rendered as an alpha overlay. render.py uses libass when this is not installed.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render-sample": "remotion render src/index.ts Overlay out/sample.mov --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --image-format=png --props=sample-props.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^8.17.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "@remotion/three": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/three": "^0.169.0",
+    "typescript": "^5.6.0"
+  }
+}
