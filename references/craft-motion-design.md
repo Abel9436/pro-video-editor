@@ -1,6 +1,6 @@
 # House style: motion design that reads as pro-edited
 
-Read before designing any talking-head short. This page is the owner's taste, learned from six rounds of rejected and accepted edits (2026-11-15 to 2026-11-17). [craft-human.md](craft-human.md) covers restraint; this page covers what the motion design must *be*. They don't conflict: every move must be motivated, and the motivated moves must be rich.
+Read before designing any talking-head short. For the level of finish by eye, see the reference reels in [frames/](frames/README.md). This page is the owner's taste, learned from six rounds of rejected and accepted edits (2026-11-15 to 2026-11-17). [craft-human.md](craft-human.md) covers restraint; this page covers what the motion design must *be*. They don't conflict: every move must be motivated, and the motivated moves must be rich.
 
 ## What was rejected, and why
 

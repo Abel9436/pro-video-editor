@@ -91,6 +91,7 @@ At each one, show what was decided and why, in plain words, using the reason fie
 | references/craft-motion-type.md | captions, titles, zooms, the zoom budget |
 | references/craft-anti-patterns.md | reviewing a rough cut |
 | references/craft-motion-design.md | **every talking-head short**: the owner's house style (the footage moves: 3D card stages, Title3D, flip3d, one hero beat), what was rejected and why, where each font/icon comes from; worked example `examples/snap/make_edl.py` |
+| references/frames/ | contact sheets of the owner's reference reels (12 frames each, indexed in its README): look before designing to calibrate the finish by eye |
 | scripts/fetch_fontet.py, scripts/fetch_3dicons.py | Amharic fonts from font.et (SIL OFL only) and 3D icons (3dicons, CC0) into a project, with licences |
 | references/craft-human.md | before any graphics pass: one hero per moment, rationed SFX/emphasis/punch-ins, show the real thing; `scripts/slop_check.py --edl` audits it |
 | scripts/before_after.py | a before/after showcase reel of a finished edit: raw footage (B&W, cut like the EDL) on a tilted card, the edit on a larger card, neon labels, an EDL-drawn timeline with a moving playhead; needs `--script-font` (a licensed handwritten font) |

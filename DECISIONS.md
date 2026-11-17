@@ -278,3 +278,7 @@ A suspected "card lands in the wrong place" bug turned out to be a misread conta
 ## 2026-11-17 - The skill carries its own taste and assets
 
 A fresh machine could run the pipeline but not reproduce the accepted look: the owner's taste lived in one machine's assistant memory, and the 3D icons and font.et fonts had been downloaded by hand. Now: references/craft-motion-design.md holds the house style and the rejection history; examples/snap/make_edl.py is the accepted design as a worked example (verified: it rebuilds the delivered EDL exactly, apart from a generic music file name); fetch_fontet.py (font.et catalogue at /data/fonts.json, SIL OFL only, refuses the rest) and fetch_3dicons.py (CC0; metadata through the jsDelivr mirror because GitHub's API allows 60 unauthenticated requests an hour, and some file names differ from icon names, e.g. crown -> crow) fetch with licences; check_env reports the Amharic packages and HyperFrames. Single-file display fonts are declared for every weight so the browser never fakes a bold.
+
+## 2026-11-17 - Reference frames ship with the skill
+
+The owner supplied the reference reels as copyright-free visual references and asked for them in the skill. One 12-frame contact sheet per reel (240 px frames, about 100 kB each, 2.4 MB in all) instead of loose frames or the videos: enough to judge finish by eye, small enough for every clone. Only reels the owner actually gave were included; other files in the same download folder were left out.

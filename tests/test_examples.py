@@ -14,3 +14,12 @@ def test_examples_parse_and_carry_no_machine_paths():
         src = f.read_text(encoding="utf-8")
         ast.parse(src)
         assert "C:/Users" not in src and "C:\\Users" not in src and "/home/" not in src, f
+
+
+def test_every_reference_frame_is_indexed():
+    d = EX.parent / "references" / "frames"
+    readme = (d / "README.md").read_text(encoding="utf-8")
+    for jpg in d.glob("*.jpg"):
+        n = jpg.name.split("-")[0]
+        assert f"| {n}" in readme or f", {n} " in readme, jpg.name
+        assert jpg.stat().st_size < 400_000, jpg.name
