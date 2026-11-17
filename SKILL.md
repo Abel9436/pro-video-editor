@@ -20,6 +20,7 @@ python scripts/check_env.py
 ```
 Required: FFmpeg with libass and libx264, Python 3.11+ with `requirements.txt` (faster-whisper, opencv, scenedetect, librosa, soundfile, numpy, jsonschema, rapidocr_onnxruntime, opentimelineio + otio-fcpx-xml-adapter + otio-fcp-adapter).
 Optional: Node 18+. The design pass renders on **HyperFrames** (`npx hyperframes@0.9.53`, fetched on first use; override with `PVE_HYPERFRAMES`), and falls back to Remotion (`remotion/`, `npm install`) for scene types HyperFrames does not have yet; Remotion also draws the older graphics track and 3D titles. A GPU encoder; Blender (3D titles otherwise fall back to Three.js in Remotion).
+Amharic transcription: `pip install -r requirements-amharic.txt` into the same environment (torch, transformers, uroman); `check_env` reports them. Run `npx --yes hyperframes@0.9.53 --version` once while online so the first render doesn't stall on the browser download.
 Without the optional parts the skill degrades: libass draws captions and graphics, libx264 encodes, and 3D titles need Remotion.
 
 All scripts: `--help`, JSON output, non-zero exit with one clear message on failure. Paths below use `P` for the project folder and assume the skill folder is the working directory.
@@ -89,6 +90,8 @@ At each one, show what was decided and why, in plain words, using the reason fie
 | references/craft-log.md | log footage (S-Log, V-Log, C-Log, F-Log, N-Log, Apple Log, D-Log...) or a `log_*` flag |
 | references/craft-motion-type.md | captions, titles, zooms, the zoom budget |
 | references/craft-anti-patterns.md | reviewing a rough cut |
+| references/craft-motion-design.md | **every talking-head short**: the owner's house style (the footage moves: 3D card stages, Title3D, flip3d, one hero beat), what was rejected and why, where each font/icon comes from; worked example `examples/snap/make_edl.py` |
+| scripts/fetch_fontet.py, scripts/fetch_3dicons.py | Amharic fonts from font.et (SIL OFL only) and 3D icons (3dicons, CC0) into a project, with licences |
 | references/craft-human.md | before any graphics pass: one hero per moment, rationed SFX/emphasis/punch-ins, show the real thing; `scripts/slop_check.py --edl` audits it |
 | scripts/before_after.py | a before/after showcase reel of a finished edit: raw footage (B&W, cut like the EDL) on a tilted card, the edit on a larger card, neon labels, an EDL-drawn timeline with a moving playhead; needs `--script-font` (a licensed handwritten font) |
 | scripts/lib/hf_explainer.py | 3D explainer stages: camera `card` fold, `Stage3D` / `Podium3D` under-scenes, `Title3D` extruded type, `flip3d` transition |

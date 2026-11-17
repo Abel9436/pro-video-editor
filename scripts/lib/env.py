@@ -32,7 +32,13 @@ PY_PACKAGES = {
     "jsonschema": "EDL validation",
     "pyannote.audio": "speaker diarization (fallback: MFCC clustering, low confidence)",
     "opentimelineio": "timeline export (milestone 8)",
+    "PIL": "required (pillow)",
+    "fontTools": "variable-font weight ranges in fetch_fontet.py (fallback: every weight declared 400)",
+    "torch": "Amharic transcription, transcribe_am.py (pip install -r requirements-amharic.txt)",
+    "transformers": "Amharic transcription, transcribe_am.py (pip install -r requirements-amharic.txt)",
+    "uroman": "Amharic forced alignment, transcribe_am.py (pip install -r requirements-amharic.txt)",
 }
+HYPERFRAMES = "hyperframes@0.9.53"   # the CLI version the design pass and snapshots are pinned to
 
 
 def _has_module(name: str) -> bool:
@@ -128,6 +134,13 @@ def check_all(test_gpu: bool = True) -> dict:
     report["tools"]["node"] = {"available": node_ok, "path": node, "version": node_ver}
     if not node_ok:
         report["fallbacks"].append("Node 20+ missing: no Remotion; captions fall back to FFmpeg ASS burn-in")
+
+    npx = which("npx")
+    report["tools"]["hyperframes"] = {"available": bool(npx and node_ok), "cli": HYPERFRAMES,
+                                      "note": f"first use downloads {HYPERFRAMES} and its headless browser; "
+                                              f"run `npx --yes {HYPERFRAMES} --version` once while online"}
+    if not (npx and node_ok):
+        report["fallbacks"].append("npx/Node 20+ missing: no HyperFrames design pass (motion graphics, 3D stages, pop captions)")
 
     blender = blender_path()
     report["tools"]["blender"] = {"available": bool(blender), "path": blender}

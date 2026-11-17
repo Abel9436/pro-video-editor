@@ -15,3 +15,4 @@ rapidocr_onnxruntime>=1.2   # on-screen text in fingerprint.py
 opentimelineio>=0.17        # export_timeline.py
 otio-fcpx-xml-adapter>=1.0  # FCPXML (Final Cut, Resolve)
 otio-fcp-adapter>=1.0       # FCP7 XML (Premiere, Resolve)
+fonttools>=4.40          # variable-font weight ranges (fetch_fontet.py)

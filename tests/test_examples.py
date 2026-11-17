@@ -1,0 +1,16 @@
+"""The worked example stays importable and portable (offline, 2026-11-17)."""
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+EX = Path(__file__).resolve().parents[1] / "examples"
+
+
+def test_examples_parse_and_carry_no_machine_paths():
+    files = list(EX.rglob("*.py"))
+    assert files
+    for f in files:
+        src = f.read_text(encoding="utf-8")
+        ast.parse(src)
+        assert "C:/Users" not in src and "C:\\Users" not in src and "/home/" not in src, f
