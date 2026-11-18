@@ -182,7 +182,7 @@ def draft(paper: dict, project: Path) -> dict:
                        "style": paper.get("style"), "profile": paper.get("profile"),
                        "target_duration_f": int(round(float(paper.get("target_duration_s", 0)) * fps)) or None,
                        "commercial": bool(paper.get("commercial", True)),
-                       "kit": paper.get("kit", {"sound": "pve_synth_v1", "type": "default", "icons": None})},
+                       "kit": paper.get("kit", {"sound": "pve_synth_v2", "type": "default", "icons": None})},
            "tracks": {"video": video, "dialogue": dialogue, "broll": [], "music": [], "sfx": [],
                       "captions": None, "graphics": []},
            "color": paper.get("color", {"correction": "auto", "match_shots": True, "look": None, "strength": 0.0}),
@@ -352,17 +352,17 @@ def auto_sfx(edl: dict, style: dict, fps: Fraction) -> list[dict]:
     for ev in edl["tracks"]["video"]:
         tr = ev.get("transition_in", "cut")
         if tr in ("whip", "zoom"):
-            out.append({"asset": "kit:whoosh_short", "at_f": max(0, ev["at_f"] - 3), "gain_db": -16,
+            out.append({"asset": "kit:whoosh_short", "at_f": ev["at_f"], "gain_db": -16, "align": "peak",
                         "role": "transition_whoosh", "reason": f"{tr} transition into {ev['id']}"})
         for x in ev.get("transform", []):
             if x["type"] == "punch_in":
-                out.append({"asset": "kit:click_soft", "at_f": ev["at_f"] + x["at_f"], "gain_db": -24,
+                out.append({"asset": "kit:click_soft", "at_f": ev["at_f"] + x["at_f"], "gain_db": -24, "align": "peak",
                             "role": "click", "reason": f"accent on the punch-in in {ev['id']}"})
     for g in edl["tracks"].get("graphics", []):
-        out.append({"asset": "kit:pop_soft", "at_f": g["at_f"], "gain_db": -18, "role": "text_pop",
+        out.append({"asset": "kit:pop_soft", "at_f": g["at_f"], "gain_db": -18, "align": "peak", "role": "text_pop",
                     "reason": f"{g['component']} entrance"})
     for b in edl["tracks"].get("broll", []):
-        out.append({"asset": "kit:whoosh_short", "at_f": max(0, b["at_f"] - 3), "gain_db": -18,
+        out.append({"asset": "kit:whoosh_short", "at_f": b["at_f"], "gain_db": -18, "align": "peak",
                     "role": "transition_whoosh", "reason": f"B-roll {b['id']} entry"})
     out.sort(key=lambda s: s["at_f"])
     if budget is not None and len(out) > budget:

@@ -46,7 +46,7 @@ def test_podium_hero_and_trophy():
     html = X.sc_podium3d(_cx(), "s01", 1920, 4.0, {"hero": 1, "pillars": [
         {"t": "a", "rank": 2, "slot": 0, "h": 200, "at": 0}, {"t": "b", "rank": 1, "slot": 1, "h": 380, "at": 30}],
         "trophy": {"icon": "trophy", "at": 40}})
-    assert 'class="s01-p hero"' in html and "s01-tr" in html and "bounce.out" in html
+    assert 'class="s01-p hero"' in html and "s01-tr" in html and "bounce" not in html   # 2026-11-18: no reversing eases
 
 
 def test_title3d_extrudes_and_tint_lightens():

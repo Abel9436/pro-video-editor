@@ -587,8 +587,15 @@ def render_sound(edl, items, project, analysis, fps, rdir) -> tuple[Path, dict, 
         x = x[int(float(s.get("in_s", 0)) * mix.SR):]
         if s.get("dur_f"):
             x = x[:mix.f2s(s["dur_f"], fps)]
+        x = mix.repitch(x, float(s.get("pitch", 1.0)))
+        x = mix.shape_sfx(x, s.get("lp"), s.get("hp"), float(s.get("pan", 0)))
         x = x / (np.abs(x).max() + 1e-9) * np.float32(10 ** (float(s.get("gain_db", mix.SFX_PEAK_DEFAULT_DB)) / 20))
-        mix.place(sfx, x, mix.f2s(s["at_f"], fps), fade_in=False, fade_out=True)
+        # align: the sound's peak / start / end lands on at_f; without it the file's first sample does
+        ref = mix.align_index(x, s["align"]) if s.get("align") else 0
+        at = mix.f2s(s["at_f"], fps) - ref
+        if at < 0:
+            x, at = x[-at:], 0
+        mix.place(sfx, x, at, fade_in=False, fade_out=True)
     mix.save(stems / "sfx.wav", sfx)
     pre = mix.save(stems / "premaster.wav", dia + mus + sfx)
     ms = edl.get("master") or {}
@@ -874,7 +881,10 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
     for f in [p for ext in ("*.woff2", "*.ttf", "*.otf") for p in fonts.glob(ext)]:
         if not (hf / "assets" / "fonts" / f.name).exists():
             shutil.copy2(f, hf / "assets" / "fonts" / f.name)
-    HFD.build(d, caps, cap_ys, float(fps), W, H, total, hf, {"base": media["base"], "fg": fg, "bw": media["bw"], "soft": media["soft"],
+    # Scenes are laid out in pixels for the delivery size; a half-size preview lays out at full size and is
+    # scaled down after the render (as Remotion does with --scale=0.5), so the preview shows the real layout.
+    LW, LH = (W * 2, H * 2) if preview else (W, H)
+    HFD.build(d, caps, cap_ys, float(fps), LW, LH, total, hf, {"base": media["base"], "fg": fg, "bw": media["bw"], "soft": media["soft"],
                                                              "master": rdir / "master.wav", **{k: media.get(k) for k in
                                                              ("raw", "wave", "wave_raw", "vec", "vec_raw")}}, HFD.fonts_inline(fonts), cap_scrims)
     chk = run(hf_cmd("check", "--json", str(hf.resolve())), cwd=hf, check=False, timeout=900)
@@ -897,8 +907,12 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
         print(json.dumps({"ok": True, "hyperframes_project": str(hf.resolve()), "check_errors": len(errs), "check": str(rdir / "hf_check.json"),
                           "next": f"{' '.join(HF_CLI)} preview {hf.resolve()}  (or render.py without --design-project-only)"}, indent=1))
         sys.exit(0)
-    run(hf_cmd("render", str(hf.resolve()), "-o", str(out.resolve()), "--fps", str(fps), "--quality", "draft" if preview else "delivery",
+    full = out.with_name(out.stem + "_full.mp4") if preview else out
+    run(hf_cmd("render", str(hf.resolve()), "-o", str(full.resolve()), "--fps", str(fps), "--quality", "draft" if preview else "delivery",
                "--workers", str(HF_WORKERS), "--quiet"), cwd=hf, timeout=7200)
+    if preview:
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(full), "-vf", f"scale={W}:{H}:flags=lanczos", "-c:v", "libx264", "-crf", "16",
+             "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "copy", str(out)], timeout=1800)
 
 
 # ----------------------------------------------------------------------------- final

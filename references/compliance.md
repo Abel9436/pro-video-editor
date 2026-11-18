@@ -39,3 +39,7 @@ qc.py `photosensitivity` fails more than 3 flashes in any one second (a flash is
 - On request, blur bystanders' faces, license plates, addresses and screens with private data, with tracking: the EDL's `privacy.blur_faces` ("bystanders": every face except the tracked speaker; "all") is applied by render.py per frame. Plates and screens are blurred with `privacy.regions` (boxes with time ranges).
 - Never clone or synthesise a real person's voice or face without that person's permission.
 - Analysis runs locally by default (Whisper, OpenCV, RapidOCR). Network use happens only for: model and font downloads at first run, and fetch_assets.py searches (Openverse, Pexels, Pixabay, Poly Haven, Iconify), which send search words, never footage. State it when a step sends anything out, and keep it optional.
+
+## Truth on screen (2026-11-18)
+
+Every number, claim or result a designed graphic shows must come from the speaker's own words or from the user. No invented statistics, prices, ratings, reviews or badges, and no "guaranteed" results. Logos and brand names only with permission. Anyone recognisable on screen has agreed to appear; ask when it isn't the user's own footage.

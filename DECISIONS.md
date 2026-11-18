@@ -292,3 +292,14 @@ Cloned the repo into an empty folder, made a new venv from requirements.txt alon
 - Openverse has little commercial-safe music (mostly BY-SA), and the original bed had been fetched from Mixkit by hand. New fetch_music.py lists Mixkit tag/mood/genre pages and downloads with the licence checked on the day (listing links #musicFree, licence page reads "Stock Music Free License"); the restrictions (no broadcast, games, remixes, Content ID) go into licenses.json.
 
 premium-design.md now says its measured numbers are not targets where the owner rejected them (text on screen ~95 %, UI cards as default, unducked music) and defers to craft-motion-design.md.
+
+## 2026-11-18 - Finish rules from a study of a product-ad motion skill
+
+The owner supplied a third-party "Motion Design" skill (no licence file, so treated as all rights reserved: techniques studied, nothing copied) and asked for everything useful in it. Two agents read it line by line against ours. Adopted, in our own code and words:
+
+- Sound: render.py placed every SFX's first sample on its frame, although fetch_sfx measured each sound's peak; whooshes and hits landed late. SFX now take `align` (peak / start / end, the peak refined to the raw maximum within 10 ms), plus `pitch`, `lp`, `hp` and `pan`; plan_edit's auto SFX use `align: peak` and lose their fixed 3-frame lead.
+- Synth kit v2: pass-by whooshes (band centre rises then falls), tick, soft_hit, air_bed. Stereo width only on airy sounds: a full Haas delay measured L/R correlation -0.4 on pops and ticks, which cancels on a phone speaker.
+- 3D stages: one key light (LIGHT) drives every extrusion, drop shadow, box shadow and the set's light pool; one lens (PERSP 1800, STARTING DEFAULT, was 900-2200 per element); no yoyo floats, bounce or swing-back drifts; stages leave by pushing through the lens (or `exit: cut` under an unfolding card) instead of a 0.25 s dissolve; near/far dust for depth of field; headlines rack from blur; 4 px grid lines (2 px shimmered); floor reflections; the card keeps a slow push while held; brand fonts override the Amharic defaults.
+- Title3D: `enter: words` (blur-rise per word, no overshoot), `still`, `sheen` (one light sweep, hero beat only), `track`.
+- design_stills.py: every design event at -0.10 / 0 / +0.15 / +0.40 s on one sheet.
+Not adopted: per-word blur-in captions (the owner rejected them as a machine tell), status lines with emoji, the product-ad workflow (logo rebuilds, phone mockups, posterised animation), and a sync "check" that only re-reads its own arithmetic.

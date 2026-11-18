@@ -93,7 +93,11 @@ SCHEMA = {
                     "type": "object", "required": ["asset", "at_f", "reason"],
                     "properties": {"asset": {"type": "string"}, "at_f": FRAME, "gain_db": {"type": "number"},
                                    "in_s": {"type": "number", "minimum": 0}, "dur_f": {"type": "integer", "minimum": 1},
-                                   "reason": REASON, "role": {"type": "string"}}}},
+                                   "reason": REASON, "role": {"type": "string"},
+                                   "align": {"enum": ["peak", "start", "end"]},
+                                   "pitch": {"type": "number", "minimum": 0.5, "maximum": 2},
+                                   "lp": {"type": "number", "minimum": 200}, "hp": {"type": "number", "minimum": 20},
+                                   "pan": {"type": "number", "minimum": -1, "maximum": 1}}}},
                 "captions": {"type": ["object", "null"], "properties": {
                     "template": {"type": "string"}, "source": {"enum": ["transcript", "text"]},
                     "highlight": {"enum": ["keyword", "none", "active_word"]}, "safe_zone": {"type": "string"},

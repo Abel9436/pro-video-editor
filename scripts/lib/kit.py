@@ -19,7 +19,7 @@ import numpy as np
 
 SKILL = Path(__file__).resolve().parent.parent.parent
 SR = 48000
-SYNTH_VERSION = "pve_synth_v1"
+SYNTH_VERSION = "pve_synth_v2"
 
 FONT_URLS = {
     "Poppins ExtraBold": "https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-ExtraBold.ttf",
@@ -76,13 +76,36 @@ def _bandsweep(x, f0, f1, q=4.0):
     return sg.istft(Z * mask, SR, nperseg=1024)[1][:n].astype(np.float32)
 
 
+def _arc_whoosh(d: float, lo: float, hi: float, seed: int) -> np.ndarray:
+    """Pass-by whoosh: band-passed noise whose centre rises then falls (something flying past), sin^2 swell."""
+    import scipy.signal as sg
+    n = int(d * SR)
+    x, y, hop = _noise(n + 512, seed), np.zeros(n + 512, np.float32), 256
+    win = np.hanning(512).astype(np.float32)
+    for i in range(0, n - 256, hop):
+        fc = lo + (hi - lo) * np.sin(np.pi * min(1.0, (i + 256) / n))
+        sos = sg.butter(2, [max(40.0, 0.6 * fc) / (SR / 2), min(20000.0, 1.4 * fc) / (SR / 2)], "band", output="sos")
+        y[i:i + 512] += sg.sosfilt(sos, x[i:i + 512]).astype(np.float32) * win
+    return y[:n] * np.sin(np.pi * np.arange(n) / n) ** 2
+
+
 def synth(role: str) -> np.ndarray:
     t = lambda d: np.arange(int(d * SR)) / SR  # noqa: E731
     if role in ("whoosh_short", "transition_whoosh", "swipe"):
-        d = 0.35 if role != "swipe" else 0.22
-        x = _bandsweep(_noise(int(d * SR), 1), 400, 5000) * np.sin(np.linspace(0, np.pi, int(d * SR))) ** 2
+        x = _arc_whoosh(0.35 if role != "swipe" else 0.22, 500, 5000, 1)
+    elif role == "whoosh_mid":
+        x = _arc_whoosh(0.6, 300, 3500, 8)
     elif role == "whoosh_long":
-        x = _bandsweep(_noise(int(0.9 * SR), 2), 200, 6000) * np.sin(np.linspace(0, np.pi, int(0.9 * SR))) ** 1.5
+        x = _arc_whoosh(1.0, 200, 2500, 2)
+    elif role in ("tick", "ui_tick"):                       # tonal tick: bright noise snap + a short 1.8 kHz body
+        tt = t(0.06)
+        x = _bandsweep(_noise(tt.size, 9), 5000, 5000, 1.5) * np.exp(-tt / 0.006) + 0.5 * np.sin(2 * np.pi * 1800 * tt) * np.exp(-tt / 0.010)
+    elif role == "soft_hit":                                # felt more than heard: 120 -> 42 Hz, slow decay
+        tt = t(0.9); f = np.geomspace(120, 42, tt.size)
+        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.minimum(tt / 0.002, 1) * np.exp(-tt / 0.2)
+    elif role == "air_bed":                                 # loopable airy texture under a design stage
+        tt = t(4.0); x = _bandsweep(_noise(tt.size, 10), 3000, 3000, 0.8)
+        edge = int(0.5 * SR); x[:edge] *= np.linspace(0, 1, edge); x[-edge:] *= np.linspace(1, 0, edge)
     elif role in ("pop_soft", "text_pop", "pop"):
         tt = t(0.09); f = 950 * np.exp(-tt * 30) + 280
         x = np.sin(2 * np.pi * np.cumsum(f) / SR) * _env(tt.size, 0.002, 0)
@@ -114,11 +137,16 @@ def synth(role: str) -> np.ndarray:
     x /= (np.abs(x).max() + 1e-9)
     fade = min(int(0.005 * SR), x.size // 4)
     x[-fade:] *= np.linspace(1, 0, fade)
+    if role in ("whoosh_short", "transition_whoosh", "swipe", "whoosh_mid", "whoosh_long", "air_bed"):
+        # gentle width on airy sounds only: a little of a 0.25 ms delayed copy in the right channel.
+        # Transients stay centred, because a phone speaker sums to mono and a full delay would cancel them.
+        r = 0.8 * x + 0.2 * np.concatenate([np.zeros(12, np.float32), x[:-12]])
+        return np.stack([x, r / (np.abs(r).max() + 1e-9)], 1)
     return np.stack([x, x], 1)
 
 
-SYNTH_ROLES = ["whoosh_short", "whoosh_long", "swipe", "pop_soft", "click_soft", "hit_low", "riser", "sub_drop",
-               "ding", "shutter", "glitch"]
+SYNTH_ROLES = ["whoosh_short", "whoosh_mid", "whoosh_long", "swipe", "pop_soft", "click_soft", "tick", "hit_low",
+               "soft_hit", "riser", "sub_drop", "shutter", "glitch", "air_bed", "ding"]   # ding: kept for old EDLs; avoid
 
 
 def kit_path(role: str) -> Path:

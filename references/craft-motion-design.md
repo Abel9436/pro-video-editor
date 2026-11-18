@@ -23,7 +23,27 @@ Read before designing any talking-head short. For the level of finish by eye, se
 5. **One hero beat from the real footage.** The best moment of the video re-uses the speaker's own picture: slow it into the key position, freeze, and draw the analysis on it (`Telestrate`, `cutaway: true`, `freeze_f`).
 6. **Captions:** `pop` style (the phrase enters once, the spoken word lights up), 84-96 px, one font, at most 2 emphasis words per 10 s. Move them (`caption_y_at`) when a stage needs the space; never let two phrases show at once.
 7. **Colour:** pick the accent from the location (the plates, the walls, the shirt) or take the owner's brand colour when given. Grade every video (`grade.json`, deep contrast, skin protected). For a dark brand colour, thin lines use a tint of it (`_tint`) so they stay visible.
-8. **Sound:** music ducked to -20 dB under speech (-18 sits on the QC edge), about 9 SFX in 30 s, each on something that visibly lands.
+8. **Sound:** music ducked to -20 dB under speech (-18 sits on the QC edge), about 9 SFX in 30 s, each on something that visibly lands. Give every SFX `"align": "peak"` so its loudest moment lands on the frame (a riser: `"end"`). Whooshes only under things that travel (a fold, a flip, a push); a cut, flash or landing gets a tick, pop or soft hit. No dings, bells or typing. Items arriving in a row get the same tick stepped up in `pitch` (0.94, 1.0, 1.06...), never the identical sample.
+
+## Finish: what makes the motion read as filmed, not assembled
+
+Learned from a study of a product-ad motion skill (2026-11-18) and kept only where it fits edited footage. Most are built into `lib/hf_explainer.py`; the rest are review habits.
+
+1. **One key light.** Every extrusion, drop shadow, box shadow and set glow comes from `LIGHT` (default high, front-left). Shadows pointing different ways are what make 3D type look like clip-art.
+2. **One lens.** Every 3D element uses `PERSP`. Mixed perspectives make a set look stitched together.
+3. **Moves never turn back.** No zoom in then out, no float that bobs up and down, no bounce or elastic. Drifts go one way and settle. The card keeps a slow push while it is held, so the unfold carries the same move on.
+4. **No dissolves between design shots.** A stage leaves by pushing through the lens (`exit: "push"`, the default) or holds until the unfolding card covers it (`exit: "cut"`).
+5. **Depth of field.** The set has sharp far specks and large blurred near motes. Headlines rack from blur into focus as they land. Footage stays sharp.
+6. **Slow settles.** Arrive fast, settle for longer than the arrival took (expo.out). If a move needs a second look to read, make it about 50 % longer.
+7. **Lines that survive a push.** Nothing thinner than 3-4 px moves in perspective or under a camera push; it shimmers. Fetch icons at twice the largest size they reach.
+8. **A still, centred end.** The closing word or call to action holds still (`still: true`) for 0.6-1 s, centred by what you see of it.
+9. **Spend the finish once.** One light sweep (`sheen`) on the hero word, one riser ending exactly on the hero beat. Nowhere else.
+10. **Titles that are lines.** `enter: "words"` brings each word up out of a blur, no overshoot. Captions stay `pop`: the owner rejected blur-in captions.
+11. **Vary the grammar, not only the palette.** A new video changes at least two of: which side the card folds to, its tilt, the flip direction, the stage type, and where the title stands.
+
+**Review transitions, not holds.** After the render, run `scripts/design_stills.py --video P/exports/vN.mp4 --edl P/edl/vN.json`. It makes a sheet with every design event at -0.10, 0, +0.15 and +0.40 s. Look for shapes passing through each other, a frame of nothing, a card leaving the frame or a misplaced word, then watch the video: stills are not playback.
+
+**Design storyboard (when there is time for a gate).** Before the full render, show the beats as a numbered table: time, the words each hangs on, what moves, how it becomes the next beat, and the sound on it. Ask whether every beat turns into the next, whether the key thing sits where the eye already is, whether something drifts in every hold, and whether any move is too quick. Take notes by beat number.
 
 ## Fonts and assets (all licensed, fetched per project)
 

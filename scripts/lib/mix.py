@@ -263,3 +263,54 @@ def true_peak(path: Path) -> float:
     txt = p.stderr.decode("utf-8", "replace")
     m = re.findall(r"True peak:\s*Peak:\s*(-?[\d.]+|-inf)", txt)
     return float(m[-1]) if m and m[-1] != "-inf" else -120.0
+
+
+# ---- sound-effect shaping (2026-11-18) -------------------------------------------------------------
+def envelope(x: np.ndarray, win_ms: float = 10.0) -> np.ndarray:
+    """Per-sample loudness: max of |x| over channels, smoothed by a win_ms boxcar."""
+    a = np.abs(x).max(axis=1) if x.ndim == 2 else np.abs(x)
+    n = max(1, int(SR * win_ms / 1000))
+    return np.convolve(a, np.ones(n, np.float32) / n, "same")
+
+
+def align_index(x: np.ndarray, how: str) -> int:
+    """Sample that must land on the cue's frame: 'peak' (hits, pops, whooshes), 'start' (first sample above
+    8 % of the peak) or 'end' (last sample above 5 %: a riser finishes on the beat)."""
+    e = envelope(x)
+    if not e.size or e.max() <= 0:
+        return 0
+    if how == "peak":   # the smoothed peak finds the loud region; the raw maximum near it is the exact hit
+        c, w = int(e.argmax()), int(SR * 0.01)
+        a = np.abs(x).max(axis=1) if x.ndim == 2 else np.abs(x)
+        lo = max(0, c - w)
+        return lo + int(a[lo:c + w + 1].argmax())
+    if how == "start":
+        return int(np.argmax(e > e.max() * 0.08))
+    if how == "end":
+        return int(np.nonzero(e > e.max() * 0.05)[0][-1])
+    raise ValueError(f"align must be peak, start or end, not {how!r}")
+
+
+def repitch(x: np.ndarray, ratio: float) -> np.ndarray:
+    """Varispeed: ratio > 1 is higher and shorter. Linear interpolation is enough for short SFX."""
+    if abs(ratio - 1) < 1e-4:
+        return x
+    n = max(2, int(round(x.shape[0] / ratio)))
+    src = np.arange(n, dtype=np.float64) * ratio
+    idx = np.arange(x.shape[0])
+    return np.stack([np.interp(src, idx, x[:, c]) for c in range(x.shape[1])], 1).astype(np.float32)
+
+
+def shape_sfx(x: np.ndarray, lp: float | None = None, hp: float | None = None, pan: float = 0.0) -> np.ndarray:
+    """Optional low/high-pass (Hz, 2nd-order Butterworth) and constant-power pan (-1 left .. 1 right)."""
+    if lp or hp:
+        import scipy.signal as sg
+        if hp:
+            x = sg.sosfilt(sg.butter(2, hp / (SR / 2), "high", output="sos"), x, axis=0)
+        if lp:
+            x = sg.sosfilt(sg.butter(2, min(lp, SR / 2 - 100) / (SR / 2), "low", output="sos"), x, axis=0)
+        x = x.astype(np.float32)
+    if pan:
+        p = max(-1.0, min(1.0, float(pan)))
+        x = x * np.array([np.sqrt((1 - p) / 2), np.sqrt((1 + p) / 2)], np.float32) * np.float32(np.sqrt(2))
+    return x
