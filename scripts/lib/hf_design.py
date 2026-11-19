@@ -1024,7 +1024,12 @@ def root_file(cx: Ctx, T: float, layout: list[dict], scenes: list[dict], overlay
     if has_fg:
         spans = sorted([(o["s"], o["s"] + o["d"]) for o in overlays if o["behind"]] + [(cx.s(b["s"]), cx.s(b["e"])) for b in bg])
         full = [(cx.s(L["s"]), cx.s(L["e"])) for L in layout if L["mode"] == "full"]
-        on = sorted((max(a, c), min(b, e)) for a, b in spans for c, e in full if min(b, e) > max(a, c))
+        on = []
+        for a, b in sorted((max(a, c), min(b, e)) for a, b in spans for c, e in full if min(b, e) > max(a, c)):
+            if on and a <= on[-1][1] + 1e-6:          # overlapping or touching spans: one stretch, or the
+                on[-1] = (on[-1][0], max(on[-1][1], b))   # first span's end hides the cut-out under the second
+            else:
+                on.append((a, b))
         js.append('tl.set("#camfg", { opacity: 0 }, 0);')
         for a, b in on:
             js.append(f'tl.set("#camfg", {{ opacity: 1 }}, {a:.3f});')
@@ -1180,7 +1185,11 @@ def build(d: dict, caps: list[dict], cap_ys: list[float], fps: float, W: int, H:
     from .hf_ae import captions_ink
     from .hf_grade import captions_cine
     from .hf_creator import captions_pop
+    from .hf_editorial import captions_whisper
+    from .hf_spec import captions_plate
     cap_html = (captions_pop(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "pop" else
+                captions_whisper(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "whisper" else
+                captions_plate(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "plate" else
                 captions_cine(cx, caps, cap_ys, size) if style == "cine" else
                 captions_ink(cx, caps, cap_ys, size, cx.brand.get("accent", "#C6FF3D"), cx.brand.get("ink", "#0E0F12")) if style == "ink" else
                 captions_lockup(cx, caps, cap_ys, size, d.get("caption_framed")) if style == "lockup" else
@@ -1234,3 +1243,19 @@ SCENE_FN["Podium3D"] = _ex.sc_podium3d
 SCENES |= {"Stage3D", "Podium3D"}
 OVERLAY_FN["Title3D"] = _ex.ov_title3d
 OVERLAYS |= {"Title3D"}
+
+# ---- editorial motion kit (lib/hf_editorial.py, 2026-11-19): graphics drawn from the story
+from . import hf_editorial as _ed  # noqa: E402
+
+OVERLAY_FN.update(_ed.OVERLAYS)
+OVERLAYS |= set(_ed.OVERLAYS)
+CAPTION_STYLES |= {"whisper"}
+
+# ---- spec-sheet explainer kit (lib/hf_spec.py, 2026-11-19): branded 3D world, glass spec panels
+from . import hf_spec as _sp  # noqa: E402
+
+OVERLAY_FN.update(_sp.OVERLAYS)
+OVERLAYS |= set(_sp.OVERLAYS)
+SCENE_FN.update(_sp.SCENES)
+SCENES |= set(_sp.SCENES)
+CAPTION_STYLES |= {"plate"}

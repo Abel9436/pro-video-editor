@@ -24,6 +24,7 @@ MOVING_CAM_SHARE = 0.4       # STARTING DEFAULT: share of the runtime with an an
 SHAKES_PER_MIN = 2.0         # STARTING DEFAULT
 PUNCH_EVERY_N_CUTS = 3       # sourced: "no more than once every three or four cuts" (Maximov)
 MAX_REVEAL_MOVES = 2         # STARTING DEFAULT: a before/after wipe is spent once (in, and maybe out)
+BACKDROPS = {"World"}        # a set that replaces the speaker's backdrop is the stage, not a graphic on it
 KARAOKE_STYLES = {"pop", "phrase", "slam", "neon", "keyword", "tier", "box", "lockup", "ink", "cine"}
 
 
@@ -75,6 +76,8 @@ def audit(edl: dict) -> list[dict]:
     # one overlay type on screen for most of the runtime is decoration, not information
     share: dict[str, int] = {}
     for o in d.get("overlays") or []:
+        if o["type"] in BACKDROPS:
+            continue
         share[o["type"]] = share.get(o["type"], 0) + max(0, o["e"] - o["s"])
     worst = max(share.items(), key=lambda kv: kv[1], default=(None, 0))
     sh = worst[1] / total
@@ -83,7 +86,7 @@ def audit(edl: dict) -> list[dict]:
                   "show a graphic while it explains something, then take it off"))
 
     # graphics animating at the same frame
-    spans = [(o["s"], o["e"]) for o in d.get("overlays") or []] + [(s["s"], s["e"]) for s in d.get("scenes") or []]
+    spans = [(o["s"], o["e"]) for o in d.get("overlays") or [] if o["type"] not in BACKDROPS] + [(s["s"], s["e"]) for s in d.get("scenes") or []]
     spans += [(b["s"], b["e"]) for b in d.get("bg") or [] if b.get("color") == "raw" and b.get("labels")]
     peak, at = 0, 0
     for f in range(0, total, 3):

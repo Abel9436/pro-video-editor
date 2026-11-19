@@ -45,8 +45,10 @@ def test_build_writes_an_editable_project(tmp_path):
     # split span: blurred copy + feathered speaker; bg span: B&W copy from the same media time
     assert 'id="spb0"' in root and 'data-media-start="2.0" data-track-index="2" src="assets/base_soft.mp4"' in root
     assert 'src="assets/base_bw.mp4"' in root
-    # the cut-out is visible only while the behind overlay is on screen in a full layout
-    assert 'tl.set("#camfg", { opacity: 1 }, 0.200);' in root and 'tl.set("#camfg", { opacity: 0 }, 1.600);' in root
+    # the cut-out is visible only while something sits behind it in a full layout; the B&W span (0-1.2 s) and
+    # the behind overlay (0.2-1.6 s) overlap, so it is one stretch (the B&W end must not hide it under the halo)
+    assert 'tl.set("#camfg", { opacity: 1 }, 0.000);' in root and 'tl.set("#camfg", { opacity: 0 }, 1.600);' in root
+    assert 'tl.set("#camfg", { opacity: 0 }, 1.200);' not in root
     cap = (hf / "compositions" / "captions.html").read_text(encoding="utf-8")
     assert 'class="in scrim"' in cap and 'class="e">world<' in cap and "top:1267px" in cap
     assert (hf / "assets" / "base.mp4").exists() and (hf / "assets" / "fg.webm").exists()

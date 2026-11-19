@@ -94,8 +94,10 @@ At each one, show what was decided and why, in plain words, using the reason fie
 | references/frames/ | contact sheets of the owner's reference reels (12 frames each, indexed in its README): look before designing to calibrate the finish by eye |
 | scripts/design_stills.py | after any render with a design pass: stills of every transition at -0.10/0/+0.15/+0.40 s on one sheet; look at it before showing anyone |
 | scripts/fetch_fontet.py, scripts/fetch_3dicons.py | Amharic fonts from font.et (SIL OFL only) and 3D icons (3dicons, CC0) into a project, with licences |
+| references/craft-motion-design.md, "Fresh grammar" | first, for every new footage: design from its own story and subject, never from the last edit; new type voice; `slop_check.py` `fresh_grammar` compares against the design log |
 | references/craft-human.md | before any graphics pass: one hero per moment, rationed SFX/emphasis/punch-ins, show the real thing; `scripts/slop_check.py --edl` audits it |
 | scripts/before_after.py | a before/after showcase reel of a finished edit: raw footage (B&W, cut like the EDL) on a tilted card, the edit on a larger card, neon labels, an EDL-drawn timeline with a moving playhead; needs `--script-font` (a licensed handwritten font) |
+| scripts/lib/hf_spec.py | an explainer in a branded world: `World` backdrop behind the matte, `Ring`, `Stat`, `FlipCard`, `NextUp`, `Meters` / `Divisions` under a camera `card`, `plate` captions |
 | scripts/lib/hf_explainer.py | 3D explainer stages: camera `card` fold, `Stage3D` / `Podium3D` under-scenes, `Title3D` extruded type, `flip3d` transition |
 | references/viral-algorithms.md, viral-psychology.md, viral-hooks.md, viral-retention.md, viral-formats.md | **retention-style projects only** (shorts, reels, TikTok, YouTube growth edits) |
 | references/platforms.md | choosing the target, safe zones, export presets |

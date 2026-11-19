@@ -82,9 +82,9 @@ def test_custom_grade_dict_writes_a_cube(tmp_path):
 
 
 def test_transcribe_am_help_and_clear_failure(tmp_path):
-    h = subprocess.run([sys.executable, str(ROOT / "scripts" / "transcribe_am.py"), "--help"], capture_output=True, text=True)
+    h = subprocess.run([sys.executable, str(ROOT / "scripts" / "transcribe_am.py"), "--help"], capture_output=True, text=True, encoding="utf-8")
     assert h.returncode == 0 and "hohe-asr" in h.stdout
     r = subprocess.run([sys.executable, str(ROOT / "scripts" / "transcribe_am.py"), "draft", "--media", str(tmp_path / "none.wav")],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     out = json.loads(r.stdout)
     assert r.returncode == 1 and out["ok"] is False and "no such file" in out["error"]

@@ -303,3 +303,19 @@ The owner supplied a third-party "Motion Design" skill (no licence file, so trea
 - Title3D: `enter: words` (blur-rise per word, no overshoot), `still`, `sheen` (one light sweep, hero beat only), `track`.
 - design_stills.py: every design event at -0.10 / 0 / +0.15 / +0.40 s on one sheet.
 Not adopted: per-word blur-in captions (the owner rejected them as a machine tell), status lines with emoji, the product-ad workflow (logo rebuilds, phone mockups, posterised animation), and a sync "check" that only re-reads its own arithmetic.
+
+## 2026-11-19 - Fresh grammar: every video designed from its own story
+
+The owner rejected house v2 as generic and beginner-like: it re-used the snap edit's accepted pattern (3D stages, card folds, flips, pop captions, DM Serif) on a real-estate story with an ironic hook, and pointed to a property reel (words layered behind the speaker, a 3D orbit of property photos, comment cards, small light captions). Decisions:
+- Round 7's pattern is demoted from "the pattern" to one answer for explainers; the first rule is now Fresh grammar (craft-motion-design.md): read the story and the subject's nouns, build graphics from them, show real photos from the footage, a new type voice per video.
+- New kit lib/hf_editorial.py: Lockup, PhotoCard, Track, Fan, Call, Orbit (CSS 3D ring split into back/front halves around the matte, so no per-frame script), Strikes, Web; captions_whisper. render.py copies P/images into the HyperFrames project; previews were also fixed to lay out at delivery size.
+- Repetition is now measured: lib/grammar.py records each final render's devices in ~/.pve/design_log.jsonl (user data, outside the repo); slop_check's fresh_grammar warns above 50 % reuse with one recent project (STARTING DEFAULT) or the same title font and caption style. Seeded from the earlier projects: v2 scored 71 % against snap, v3 15 %.
+
+## 2026-11-19 - Spec-sheet kit, and two render fixes found on the Open Bodybuilding edit
+
+The owner asked for a premium 3D explainer in the brand's dark green with the newest Amharic font. Decisions:
+- New kit lib/hf_spec.py (World, Ring, Stat, FlipCard, NextUp overlays; Meters and Divisions under-scenes; `plate` captions), built from the subject (a competition spec sheet) rather than re-using round 7 or the editorial kit. fresh_grammar: 8 % reuse.
+- Fonts: Difres and Tsega Elto, the two newest SIL OFL fonts on font.et (sorted by publishedAt).
+- restraint.py: a backdrop replacement (`World`) is the stage, not a graphic, so it no longer counts toward persistent-overlay or concurrent-layer limits.
+- Bug: the speaker cut-out was switched off at the end of the first of two overlapping behind spans (a backdrop and a ring), so he vanished from 6.3 s while the backdrop still covered the footage. Spans are now merged (test_spec.py).
+- Bug: the HyperFrames footage cache (hf_media) was keyed on the chunk list only, so a new grade never reached the design pass. It now also keys on the graded picture's size and mtime.

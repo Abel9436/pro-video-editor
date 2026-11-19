@@ -13,8 +13,21 @@ Read before designing any talking-head short. For the level of finish by eye, se
 | 5 | A HUD on screen 79 % of the time, 46-60 SFX/min | "AI slop" | Excess is the tell: `slop_check.py` limits |
 | 6 | Restrained overlays only | "you are just playing with the captions" | Restraint is not plainness: the footage itself must move |
 | 7 | 3D explainer stages, footage folded into 3D cards, extruded titles, 3D flips | accepted | The pattern below |
+| 8 | Round 7's pattern again on a real-estate video (stages, card fold, flips, pop captions, DM Serif) | "generic", "like a very beginner", "you are just copying the last video's effects" | Round 7 was one answer, not a template: design every video from its own story (Fresh grammar, below) |
 
-## The pattern that was accepted
+## Fresh grammar: design each video from its own story (2026-11-19, the first rule)
+
+When new raw footage comes in, act like an editor seeing it for the first time, not like a template:
+
+1. **Read the story, then the subject.** One line on what it is about and where the joke or turn is (house v3: "they got ready to list and never had to"). List the nouns of the subject's world (listing, status, offers, a phone call, the rooms, showings, open houses, relationships) and make the graphics *from those things*: a listing card for this property stamped NEVER LISTED, a status track, offers fanning in, a call bar, the rooms orbiting her. A graphic that would fit any video is decoration.
+2. **Show the real thing.** Photos come from the footage itself (stills of the rooms into `P/images/`), screenshots from the client, the real place. Never stock, never invented proof.
+3. **Every kind of motion graphic, not only captions:** words layered behind the speaker (`Lockup`), UI-style cards (`PhotoCard`, `Call`, `Track`), objects that fly in (`Fan`), 3D around the speaker (`Orbit` front and back halves), marks drawn on (`Strikes`), systems that grow (`Web`), signatures (`Lockup` script). Stages and card folds (`Stage3D`, `card`) are still in the kit, for explainers.
+4. **A new type voice every video.** Search beyond the default faces (DM Serif, Playfair, Cormorant, Instrument Serif, Montserrat, Anton are the AI tells). Pick from the subject: real estate and lifestyle got Bodoni Moda (fashion serif), Hanken Grotesk light (quiet captions), Italiana (thin capitals), Pinyon Script (signatures). Free licences only (OFL via `fetch_fonts.py`).
+5. **Captions fit the voice.** Bold pop captions suit energy; a calm, premium speaker gets `whisper` captions (small, light, one word at a time) as in the property reels the owner sent.
+6. **Second worked answer: an explainer in a branded world** (amh3, Open Bodybuilding, 2026-11-19). The subject is a competition spec, so the graphics are a spec sheet (lib/hf_spec.py): `World` replaces the speaker's backdrop with the brand's 3D studio (behind the matte, full-frame spans only), `Ring` draws the hook's zero round his head, `Stat` lands a slot number on 0, `FlipCard` turns the myth into the answer, `Meters` (under a camera `card`) slams each requirement to MAX, `Divisions` runs curve, strike and dealt cards, `NextUp` presses follow, `plate` captions. When the card folds, the original wall shows inside it: grade its hue to the brand (`color.look.hues` shift, test the shift on a still first) so the card matches the set.
+7. **Check it.** `slop_check.py` runs `fresh_grammar`: it compares this edit's devices, title font and caption style with the last projects in the design log (`~/.pve/design_log.jsonl`, written by every final render) and warns when more than half is reused or the type voice is the same. v2 of the house edit scored 71 % against the snap edit; v3 scored 15 %.
+
+## The pattern that was accepted in round 7 (an explainer answer, not a template)
 
 1. **The footage moves.** At least twice in a 20-40 s short, the speaker's clip folds into a tilted 3D card (`camera` entry with `card`) and a set builds behind it (`Stage3D` or `Podium3D`, `under: true`). The card unfolds back to full frame when the idea ends: the end of a stage is the start of the next sentence, never later.
 2. **Explain the idea, don't decorate it.** Each stage shows the argument being made: a claim struck through, a headline number, cards that flip in for each reason, a podium for a ranking. One idea per stage, one 3D icon per card at most, from the meaning of the line (gym for leg day, target for doing it properly, trophy for "the best").
@@ -49,8 +62,9 @@ Learned from a study of a product-ad motion skill (2026-11-18) and kept only whe
 
 | Need | Source | Fetch |
 |---|---|---|
-| Amharic captions and titles | font.et, SIL OFL entries only: Menbere (captions, variable 100-700), Zemach (titles), Bela Bereka (emphasis) | `scripts/fetch_fontet.py get --project P Menbere Zemach "Bela Bereka"` |
-| Latin display and numbers | Google Fonts (Anton, Montserrat, JetBrains Mono) | `scripts/fetch_fonts.py` |
+| Amharic captions and titles | font.et, SIL OFL entries only. Newest first (sort fonts.json by `publishedAt`): Difres (2026-11-04, variable 300-700, captions and body), Tsega Elto (2026-10-12, geometric titles), Nael Tarik; earlier Menbere, Zemach, Bela Bereka. Change the pair per video | `scripts/fetch_fontet.py get --project P Difres "Tsega Elto"` |
+| Latin display and numbers | Google Fonts, chosen per video (e.g. Bodoni Moda, Hanken Grotesk, Italiana, Pinyon Script for property; not the overused defaults) | `scripts/fetch_fonts.py --project P "Bodoni Moda:italic400" ...` |
+| Photos for cards and orbits | stills from the footage itself, graded: `ffmpeg -ss T -i P/render/final/picture_graded.mp4 -frames:v 1 P/images/room.jpg` | copied into the HyperFrames project by render.py |
 | 3D icons in stages | 3dicons, CC0, `color` style | `scripts/fetch_3dicons.py get --project P gym trophy target` |
 | Line icons to draw on | Lucide, ISC | `scripts/fetch_lineicons.py` |
 | SFX | Freesound CC0 / Kenney | `scripts/fetch_sfx.py` |

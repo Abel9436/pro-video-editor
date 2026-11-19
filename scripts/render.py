@@ -829,6 +829,8 @@ def hf_media(pic: Path, rdir: Path, fps, need_bw: bool, need_soft: bool, raw: Pa
     md.mkdir(exist_ok=True)
     lst = rdir / "chunks.txt"
     key = hashlib.md5((lst.read_text(encoding="utf-8") if lst.exists() else str(pic.stat().st_mtime)).encode()).hexdigest()
+    # the chunk list does not change with the grade: key on the graded picture too, or a new look never reaches HyperFrames
+    key += hashlib.md5(f"{pic.stat().st_size}:{pic.stat().st_mtime_ns}".encode()).hexdigest()[:8]
     g = str(int(round(float(fps))))
     jobs = {"base": ("base.mp4", "null"), "bw": ("base_bw.mp4", "hue=s=0,eq=contrast=1.15") if need_bw else None,
             "soft": ("base_soft.mp4", "scale=iw/4:-2,boxblur=10:2,scale=1080:1920,eq=brightness=-0.22:saturation=1.2") if need_soft else None}
@@ -878,6 +880,12 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
         for f in (project / "icons3d").glob("*_color.png"):
             if not (hf / "assets" / "icons3d" / f.name).exists():
                 shutil.copy2(f, hf / "assets" / "icons3d" / f.name)
+    if (project / "images").exists():           # stills and photos used by PhotoCard / Orbit (lib/hf_editorial.py)
+        (hf / "assets" / "images").mkdir(parents=True, exist_ok=True)
+        for f in [p for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp") for p in (project / "images").glob(ext)]:
+            dst = hf / "assets" / "images" / f.name
+            if not dst.exists() or dst.stat().st_mtime < f.stat().st_mtime:
+                shutil.copy2(f, dst)
     for f in [p for ext in ("*.woff2", "*.ttf", "*.otf") for p in fonts.glob(ext)]:
         if not (hf / "assets" / "fonts" / f.name).exists():
             shutil.copy2(f, hf / "assets" / "fonts" / f.name)
@@ -1121,6 +1129,12 @@ def main() -> None:
               "ledger_warnings": lw, "seconds": round(time.time() - t0, 1)}
     write_json(rdir / "render.json", report)
     log(f"wrote {out} ({report['seconds']} s, {pinfo['rendered']} chunks rendered, {pinfo['reused']} reused, {enc})")
+    if mode == "final" and edl.get("design"):      # remember this edit's devices so the next project designs fresh
+        from lib import grammar
+        try:
+            grammar.record(edl, project.resolve().parent.name if project.name == "project" else project.resolve().name)
+        except OSError as e:
+            log(f"  [warn] design log not written: {e}")
 
 
 if __name__ == "__main__":
