@@ -98,6 +98,7 @@ At each one, show what was decided and why, in plain words, using the reason fie
 | references/craft-human.md | before any graphics pass: one hero per moment, rationed SFX/emphasis/punch-ins, show the real thing; `scripts/slop_check.py --edl` audits it |
 | scripts/before_after.py | a before/after showcase reel of a finished edit: raw footage (B&W, cut like the EDL) on a tilted card, the edit on a larger card, neon labels, an EDL-drawn timeline with a moving playhead; needs `--script-font` (a licensed handwritten font) |
 | scripts/lib/hf_spec.py | an explainer in a branded world: `World` backdrop behind the matte, `Ring`, `Stat`, `FlipCard`, `NextUp`, `Meters` / `Divisions` under a camera `card`, `plate` captions |
+| scripts/lib/hf_objects.py | real 3D objects: `Object3D` plays a Blender-rendered alpha webm (P/objects/) in a light pool, `Sweep` light sweep over folds, `glint` captions; Meters/Divisions/NextUp take 3D `icon`/`hero`/`bell`. Model objects with a project Blender script (work/amh3/objects3d.py) |
 | scripts/lib/hf_explainer.py | 3D explainer stages: camera `card` fold, `Stage3D` / `Podium3D` under-scenes, `Title3D` extruded type, `flip3d` transition |
 | references/viral-algorithms.md, viral-psychology.md, viral-hooks.md, viral-retention.md, viral-formats.md | **retention-style projects only** (shorts, reels, TikTok, YouTube growth edits) |
 | references/platforms.md | choosing the target, safe zones, export presets |

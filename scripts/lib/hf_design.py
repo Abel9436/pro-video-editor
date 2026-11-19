@@ -1187,9 +1187,11 @@ def build(d: dict, caps: list[dict], cap_ys: list[float], fps: float, W: int, H:
     from .hf_creator import captions_pop
     from .hf_editorial import captions_whisper
     from .hf_spec import captions_plate
+    from .hf_objects import captions_glint
     cap_html = (captions_pop(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "pop" else
                 captions_whisper(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "whisper" else
                 captions_plate(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "plate" else
+                captions_glint(cx, caps, cap_ys, size, d.get("caption_font"), d.get("caption_font_emph")) if style == "glint" else
                 captions_cine(cx, caps, cap_ys, size) if style == "cine" else
                 captions_ink(cx, caps, cap_ys, size, cx.brand.get("accent", "#C6FF3D"), cx.brand.get("ink", "#0E0F12")) if style == "ink" else
                 captions_lockup(cx, caps, cap_ys, size, d.get("caption_framed")) if style == "lockup" else
@@ -1259,3 +1261,10 @@ OVERLAYS |= set(_sp.OVERLAYS)
 SCENE_FN.update(_sp.SCENES)
 SCENES |= set(_sp.SCENES)
 CAPTION_STYLES |= {"plate"}
+
+# ---- 3D objects, light sweeps, glint captions (lib/hf_objects.py, 2026-11-19)
+from . import hf_objects as _ob  # noqa: E402
+
+OVERLAY_FN.update(_ob.OVERLAYS)
+OVERLAYS |= set(_ob.OVERLAYS)
+CAPTION_STYLES |= {"glint"}

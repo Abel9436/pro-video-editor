@@ -319,3 +319,7 @@ The owner asked for a premium 3D explainer in the brand's dark green with the ne
 - restraint.py: a backdrop replacement (`World`) is the stage, not a graphic, so it no longer counts toward persistent-overlay or concurrent-layer limits.
 - Bug: the speaker cut-out was switched off at the end of the first of two overlapping behind spans (a backdrop and a ring), so he vanished from 6.3 s while the backdrop still covered the footage. Spans are now merged (test_spec.py).
 - Bug: the HyperFrames footage cache (hf_media) was keyed on the chunk list only, so a new grade never reached the design pass. It now also keys on the graded picture's size and mtime.
+
+## 2026-11-19: real 3D objects for premium explainers (hf_objects.py)
+The owner rejected the amh3 v2 spec-sheet edit as generic: flat panels and a caption plate. Decision: premium explainers carry rendered 3D objects. Objects are modelled from primitives in Blender 5.2 headless (a per-project script, no third-party assets so nothing to license), rendered with transparent film at 640 px / 30 fps (STARTING DEFAULT), encoded VP9 yuva420p webm crf 30 (STARTING DEFAULT) into P/objects/, copied by render.py to assets/objects/. `Object3D` (rise/fly/drop in, push/drop/cut out, light pool, contact shadow, optional gold label), `Sweep` (light sweep over a fold) and `glint` captions. Meters rows take `icon`, a `hero` object and `kicker_size`; MAX tags moved to the sub line so icons never sit on the label. Divisions cards take `icon`, NextUp takes `bell`.
+

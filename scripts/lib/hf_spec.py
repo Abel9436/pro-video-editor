@@ -33,6 +33,7 @@ import random
 from .hf_ae import esc
 from .hf_design import Ctx, scene_file
 from .hf_explainer import PERSP
+from .hf_objects import objvid
 
 TITLE, BODY, ACCENT_FONT = "'Tsega Elto', 'Difres', sans-serif", "'Difres', sans-serif", "'Nael Tarik', serif"
 META = "'Hanken Grotesk', 'Difres', sans-serif"
@@ -204,6 +205,8 @@ def ov_nextup(cx: Ctx, cid: str, dur: float, p: dict) -> str:
             f'<div style="margin-top:30px;height:8px;border-radius:4px;background:rgba(255,255,255,0.12);overflow:hidden">'
             f'<div id="{cid}-bar" style="height:8px;width:100%;background:linear-gradient(90deg,{C["brand"]},{C["mint"]})"></div></div>'
             f'<div style="position:relative;margin-top:34px;display:flex;justify-content:flex-end">'
+            + (objvid(f"{cid}-bell", p["bell"], max(0.0, pa - 0.2), dur - max(0.0, pa - 0.2),
+               "position:absolute;left:-40px;top:-80px;width:240px;height:240px;filter:drop-shadow(0 18px 24px rgba(0,0,0,0.5))") if p.get("bell") else "") +
             f'<div id="{cid}-ring" style="position:absolute;right:0;top:0;width:330px;height:92px;border-radius:46px;border:3px solid {C["mint"]};opacity:0"></div>'
             f'<div id="{cid}-btn" style="width:330px;height:92px;border-radius:46px;background:linear-gradient(180deg,#19a35c,{C["brand"]});'
             f'display:flex;align-items:center;justify-content:center;font:700 46px/1 {C["title"]};color:#fff;box-shadow:0 14px 34px rgba(14,122,67,0.55),inset 0 1.5px 0 rgba(255,255,255,0.3)">{esc(p.get("button", ""))}</div>'
@@ -239,14 +242,25 @@ def sc_meters(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
             val = (f'<div style="display:flex;align-items:baseline;gap:10px;margin-top:16px"><span id="{cid}-v{i}" style="font:700 84px/1 {C["title"]};color:{C["gold"]}">{v["from"]}</span>'
                    f'<span style="font:700 40px/1 {C["title"]};color:{C["gold"]}">{esc(v.get("unit", "%"))}</span>'
                    f'<span style="font:500 30px/1 {C["body"]};color:rgba(255,255,255,0.7);margin-left:8px">{esc(v.get("label", ""))}</span></div>')
-        rows.append(f'<div id="{cid}-r{i}" style="position:relative;padding:30px 30px 32px;margin-top:{0 if i == 0 else 22}px;{_glass(C, 0.55)}">'
-                    f'<div style="display:flex;align-items:baseline;justify-content:space-between">'
-                    f'<div style="font:700 62px/1 {C["title"]};color:#fff">{esc(r["label"])}</div>'
-                    f'<div id="{cid}-m{i}" style="font:700 28px/1 {C["meta"]};letter-spacing:0.24em;color:{C["deep"]};background:{C["gold"]};padding:10px 16px;border-radius:10px;opacity:0">MAX</div></div>'
-                    f'<div style="margin-top:12px;font:500 22px/1 {C["meta"]};letter-spacing:0.3em;color:{C["mint"]}">{esc(r.get("sub", ""))}</div>'
+        ico = ""
+        if r.get("icon"):
+            ico = objvid(f"{cid}-ic{i}", r["icon"], cx.s(r["at"]), dur - cx.s(r["at"]), "position:absolute;right:-30px;top:-62px;width:180px;height:180px;filter:drop-shadow(0 18px 22px rgba(0,0,0,0.5))")
+        rows.append(f'<div id="{cid}-r{i}" style="position:relative;padding:24px 28px 26px;margin-top:{0 if i == 0 else 18}px;{_glass(C, 0.55)}">{ico}'
+                    f'<div style="font:700 62px/1 {C["title"]};color:#fff;white-space:nowrap;padding-right:{130 if ico else 0}px">{esc(r["label"])}</div>'
+                    f'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">'
+                    f'<div style="font:500 22px/1 {C["meta"]};letter-spacing:0.3em;color:{C["mint"]}">{esc(r.get("sub", ""))}</div>'
+                    f'<div id="{cid}-m{i}" style="font:700 24px/1 {C["meta"]};letter-spacing:0.24em;color:{C["deep"]};background:{C["gold"]};padding:8px 14px;border-radius:9px;opacity:0">MAX</div></div>'
                     f'<div style="display:flex;gap:6px;margin-top:22px">{segs}</div>{val}</div>')
-    head = (f'<div id="{cid}-hd" style="margin-bottom:26px"><div style="font:500 24px/1 {C["meta"]};letter-spacing:0.36em;color:{C["mint"]}">{esc(p.get("sub", ""))}</div>'
-            f'<div style="margin-top:14px;font:700 76px/1.05 {C["title"]};color:{C["gold"]};text-shadow:0 0 40px {C["gold"]}55">{esc(p.get("kicker", ""))}</div></div>')
+    hero = ""
+    if p.get("hero"):
+        hp = p["hero"]
+        hs = hp.get("size", 380)
+        hero = (f'<div id="{cid}-hero" style="position:relative;height:{hs * 0.78:.0f}px;margin-bottom:10px">'
+                + objvid(f"{cid}-hv", hp["obj"], cx.s(hp.get("at", 0)), dur - cx.s(hp.get("at", 0)),
+                         f"position:absolute;left:50%;top:{-hs * 0.12:.0f}px;width:{hs}px;height:{hs}px;margin-left:{-hs / 2:.0f}px;filter:drop-shadow(0 30px 40px rgba(0,0,0,0.55))")
+                + '</div>')
+    head = hero + (f'<div id="{cid}-hd" style="margin-bottom:26px"><div style="font:500 24px/1 {C["meta"]};letter-spacing:0.36em;color:{C["mint"]}">{esc(p.get("sub", ""))}</div>'
+            f'<div style="margin-top:14px;font:700 {p.get("kicker_size", 76)}px/1.05 {C["title"]};color:{C["gold"]};white-space:nowrap;text-shadow:0 0 40px {C["gold"]}55">{esc(p.get("kicker", ""))}</div></div>')
     body = (wbody + f'<div id="{cid}-col" style="position:absolute;left:{x0:.0f}px;top:{top:.0f}px;width:{cw:.0f}px;perspective:{PERSP}px">'
             f'<div id="{cid}-pan" style="transform-style:preserve-3d">{head}{"".join(rows)}</div></div>')
     js.append(f'tl.fromTo("#{cid}-pan", {{ rotationY: -48, x: 320, opacity: 0 }}, {{ rotationY: -12, x: 0, opacity: 1, duration: 0.8, ease: "expo.out" }}, 0.15);')
@@ -318,7 +332,9 @@ def sc_divisions(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
     cards = p.get("cards") or []
     for i, c in enumerate(cards):
         parts.append(f'<div id="{cid}-k{i}" style="position:absolute;left:0;top:{200 + i * 176}px;width:{cw:.0f}px;height:156px;{_glass(C, 0.6)};display:flex;align-items:center;gap:26px;padding:0 30px">'
-                     f'<div style="font:700 64px/1 {C["title"]};color:{C["gold"]};width:84px">{esc(c.get("n", f"0{i + 1}"))}</div>'
+                     + (objvid(f"{cid}-ki{i}", c["icon"], cx.s(c["at"]), dur - cx.s(c["at"]),
+                        "width:150px;height:150px;margin:0 -20px 0 -30px;flex:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5))", c.get("media_start", 0.0))
+                        if c.get("icon") else f'<div style="font:700 64px/1 {C["title"]};color:{C["gold"]};width:84px">{esc(c.get("n", f"0{i + 1}"))}</div>') +
                      f'<div><div style="font:700 {c.get("size", 46)}px/1.05 {C["title"]};color:#fff;white-space:nowrap">{esc(c["t"])}</div>'
                      f'<div style="margin-top:12px;font:500 22px/1 {C["meta"]};letter-spacing:0.3em;color:{C["mint"]}">{esc(c.get("sub", ""))}</div></div></div>')
         js.append(f'tl.fromTo("#{cid}-k{i}", {{ rotationY: -70, x: 260, opacity: 0, transformPerspective: {PERSP}, transformOrigin: "100% 50%" }}, '

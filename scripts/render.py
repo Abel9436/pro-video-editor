@@ -886,6 +886,12 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
             dst = hf / "assets" / "images" / f.name
             if not dst.exists() or dst.stat().st_mtime < f.stat().st_mtime:
                 shutil.copy2(f, dst)
+    if (project / "objects").exists():          # rendered 3D objects with alpha (webm) used by Object3D (lib/hf_spec.py)
+        (hf / "assets" / "objects").mkdir(parents=True, exist_ok=True)
+        for f in (project / "objects").glob("*.webm"):
+            dst = hf / "assets" / "objects" / f.name
+            if not dst.exists() or dst.stat().st_mtime < f.stat().st_mtime:
+                shutil.copy2(f, dst)
     for f in [p for ext in ("*.woff2", "*.ttf", "*.otf") for p in fonts.glob(ext)]:
         if not (hf / "assets" / "fonts" / f.name).exists():
             shutil.copy2(f, hf / "assets" / "fonts" / f.name)
