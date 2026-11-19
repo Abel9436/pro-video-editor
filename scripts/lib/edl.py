@@ -94,7 +94,7 @@ SCHEMA = {
                     "properties": {"asset": {"type": "string"}, "at_f": FRAME, "gain_db": {"type": "number"},
                                    "in_s": {"type": "number", "minimum": 0}, "dur_f": {"type": "integer", "minimum": 1},
                                    "reason": REASON, "role": {"type": "string"},
-                                   "align": {"enum": ["peak", "start", "end"]},
+                                   "align": {"enum": ["peak", "start", "end"]}, "sync_s": {"type": "number", "minimum": 0},
                                    "pitch": {"type": "number", "minimum": 0.5, "maximum": 2},
                                    "lp": {"type": "number", "minimum": 200}, "hp": {"type": "number", "minimum": 20},
                                    "pan": {"type": "number", "minimum": -1, "maximum": 1}}}},

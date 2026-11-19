@@ -10,6 +10,8 @@ Where a limit comes from (references/craft-human.md has the full sources):
 - Emphasis: "only emphasise the punchlines" (editor review notes). Limit: STARTING DEFAULT.
 - Concurrent layers: LottieFiles motion-design skill, "with 3+ elements, no more than 1/3 in active
   motion"; digicurator: "five things moving at once reads as noise". The count of 3 is a STARTING DEFAULT.
+- SFX gap, stack and repeat: ncklrs motion-designer (MIT), rules/sound-effects.md; see
+  references/craft-motion-principles.md section 9. Sounds within one frame of each other are one stack.
 - Persistent decoration: "animate only what supports the idea, hold everything else still"
   (digicurator). The 50 % share is a STARTING DEFAULT.
 """
@@ -24,6 +26,9 @@ MOVING_CAM_SHARE = 0.4       # STARTING DEFAULT: share of the runtime with an an
 SHAKES_PER_MIN = 2.0         # STARTING DEFAULT
 PUNCH_EVERY_N_CUTS = 3       # sourced: "no more than once every three or four cuts" (Maximov)
 MAX_REVEAL_MOVES = 2         # STARTING DEFAULT: a before/after wipe is spent once (in, and maybe out)
+SFX_MIN_GAP_S = 0.2         # sourced: "minimum 0.2 s between SFX for clarity" (ncklrs motion-designer, sound-effects.md)
+SFX_MAX_STACK = 3            # sourced: "layer 2-3 SFX" for one big moment, started on the same frame (same source)
+SFX_MAX_REPEAT = 3           # STARTING DEFAULT: the source asks for "3-5 different whooshes", not one file everywhere
 BACKDROPS = {"World"}        # a set that replaces the speaker's backdrop is the stage, not a graphic on it
 KARAOKE_STYLES = {"pop", "phrase", "slam", "neon", "keyword", "tier", "box", "lockup", "ink", "cine"}
 
@@ -117,6 +122,33 @@ def audit(edl: dict) -> list[dict]:
     out.append(_w("reveal_spent_once", moves <= MAX_REVEAL_MOVES, moves, MAX_REVEAL_MOVES,
                   f"the before/after line moves {moves} time(s)",
                   "save the before/after for the payoff: one sweep, then let it land"))
+
+    # sound spacing: sounds on the same frame (+-1) are one deliberate stack; near-misses inside 0.2 s are mud
+    sfx = sorted((x for x in T.get("sfx") or [] if "at_f" in x), key=lambda x: x["at_f"])
+    near, stacks, cur = [], [], [sfx[0]] if sfx else []
+    for a, b in zip(sfx, sfx[1:]):
+        d = (b["at_f"] - a["at_f"]) / fps
+        if d <= 1.0 / fps + 1e-9:
+            cur.append(b)
+            continue
+        stacks.append(cur)
+        cur = [b]
+        if d < SFX_MIN_GAP_S:
+            near.append(round(a["at_f"] / fps, 2))
+    if cur:
+        stacks.append(cur)
+    big = max((len(x) for x in stacks), default=0)
+    out.append(_w("sfx_gap", not near and big <= SFX_MAX_STACK, len(near), 0,
+                  f"{len(near)} sound(s) start less than {SFX_MIN_GAP_S} s after the previous one"
+                  + (f" (at {', '.join(f'{t:.2f}' for t in near[:5])} s)" if near else "") + f"; largest same-frame stack {big}",
+                  f"move each sound onto the peak of its own action at least {SFX_MIN_GAP_S} s apart, or stack them on the same frame (at most {SFX_MAX_STACK}, low / mid / high)"))
+    uses: dict[str, int] = {}
+    for x in sfx:
+        uses[x.get("asset", "")] = uses.get(x.get("asset", ""), 0) + 1
+    worst = max(uses.items(), key=lambda kv: kv[1], default=("", 0))
+    out.append(_w("sfx_repeat", worst[1] <= SFX_MAX_REPEAT, worst[1], SFX_MAX_REPEAT,
+                  f"most-used sound: {worst[0].split('/')[-1] or 'none'} x{worst[1]}",
+                  "vary the file (3-5 different whooshes, a different hit per object) or pitch-shift repeats"))
     return out
 
 

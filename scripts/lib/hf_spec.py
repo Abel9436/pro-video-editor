@@ -33,7 +33,7 @@ import random
 from .hf_ae import esc
 from .hf_design import Ctx, scene_file
 from .hf_explainer import PERSP
-from .hf_objects import objvid
+from .hf_objects import objvid, turn_icons
 
 TITLE, BODY, ACCENT_FONT = "'Tsega Elto', 'Difres', sans-serif", "'Difres', sans-serif", "'Nael Tarik', serif"
 META = "'Hanken Grotesk', 'Difres', sans-serif"
@@ -244,7 +244,7 @@ def sc_meters(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
                    f'<span style="font:500 30px/1 {C["body"]};color:rgba(255,255,255,0.7);margin-left:8px">{esc(v.get("label", ""))}</span></div>')
         ico = ""
         if r.get("icon"):
-            ico = objvid(f"{cid}-ic{i}", r["icon"], cx.s(r["at"]), dur - cx.s(r["at"]), "position:absolute;right:-30px;top:-62px;width:180px;height:180px;filter:drop-shadow(0 18px 22px rgba(0,0,0,0.5))")
+            ico = objvid(f"{cid}-ic{i}", r["icon"], cx.s(r["at"]), dur - cx.s(r["at"]), ("position:absolute;right:-6px;top:-34px;width:126px;height:126px;filter:drop-shadow(0 14px 18px rgba(0,0,0,0.5))" if r["icon"].startswith("icon:") else "position:absolute;right:-30px;top:-62px;width:180px;height:180px;filter:drop-shadow(0 18px 22px rgba(0,0,0,0.5))"))
         rows.append(f'<div id="{cid}-r{i}" style="position:relative;padding:24px 28px 26px;margin-top:{0 if i == 0 else 18}px;{_glass(C, 0.55)}">{ico}'
                     f'<div style="font:700 62px/1 {C["title"]};color:#fff;white-space:nowrap;padding-right:{130 if ico else 0}px">{esc(r["label"])}</div>'
                     f'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">'
@@ -280,6 +280,8 @@ def sc_meters(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
             if v.get("final"):
                 js.append(f'tl.set("#{cid}-v{i}", {{ textContent: "{v["final"]}" }}, {cx.s(v["at"]) + v.get("dur", 1.0) + 0.02:.3f});')
     js.append(f'tl.to("#{cid}-stage", {{ scale: 1.12, opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power2.in" }}, {max(0, dur - 0.3):.3f});')
+    if 'class="ic3d"' in body:
+        js.append(turn_icons(cid, dur))
     return scene_file(cx, cid, h, wcss, body, "\n".join(js))
 
 
@@ -333,7 +335,7 @@ def sc_divisions(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
     for i, c in enumerate(cards):
         parts.append(f'<div id="{cid}-k{i}" style="position:absolute;left:0;top:{200 + i * 176}px;width:{cw:.0f}px;height:156px;{_glass(C, 0.6)};display:flex;align-items:center;gap:26px;padding:0 30px">'
                      + (objvid(f"{cid}-ki{i}", c["icon"], cx.s(c["at"]), dur - cx.s(c["at"]),
-                        "width:150px;height:150px;margin:0 -20px 0 -30px;flex:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5))", c.get("media_start", 0.0))
+                        ("width:104px;height:104px;margin:0 6px 0 -6px;flex:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5))" if c["icon"].startswith("icon:") else "width:150px;height:150px;margin:0 -20px 0 -30px;flex:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,0.5))"), c.get("media_start", 0.0))
                         if c.get("icon") else f'<div style="font:700 64px/1 {C["title"]};color:{C["gold"]};width:84px">{esc(c.get("n", f"0{i + 1}"))}</div>') +
                      f'<div><div style="font:700 {c.get("size", 46)}px/1.05 {C["title"]};color:#fff;white-space:nowrap">{esc(c["t"])}</div>'
                      f'<div style="margin-top:12px;font:500 22px/1 {C["meta"]};letter-spacing:0.3em;color:{C["mint"]}">{esc(c.get("sub", ""))}</div></div></div>')
@@ -344,6 +346,8 @@ def sc_divisions(cx: Ctx, cid: str, h: int, dur: float, p: dict) -> str:
             js.append(f'tl.to("#{cid}-k{i}", {{ y: {i * 26}, borderColor: "{C["gold"]}", duration: 0.5, ease: "expo.inOut" }}, {cx.s(p["spreadAt"]) + i * 0.06:.3f});')
     body = wbody + f'<div id="{cid}-col" style="position:absolute;left:{x0:.0f}px;top:{top:.0f}px;width:{cw:.0f}px;height:{h - top:.0f}px">{"".join(parts)}</div>'
     js.append(f'tl.to("#{cid}-stage", {{ scale: 1.12, opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power2.in" }}, {max(0, dur - 0.3):.3f});')
+    if 'class="ic3d"' in body:
+        js.append(turn_icons(cid, dur))
     return scene_file(cx, cid, h, wcss, body, "\n".join(js))
 
 

@@ -28,7 +28,11 @@ def _c(cx: Ctx) -> dict:
 
 
 def objvid(vid: str, name: str, start: float, dur: float, style: str, media_start: float = 0.0) -> str:
-    """A rendered 3D object (assets/objects/<name>.webm, VP9 with alpha) as a timed clip inside a composition."""
+    """A rendered 3D object (assets/objects/<name>.webm, VP9 with alpha) as a timed clip inside a composition.
+    `icon:<name>` is a 3dicons still instead (assets/icons3d/<name>_color.png, scripts/fetch_3dicons.py): class
+    ic3d, which the scenes turn slowly so it never sits frozen."""
+    if name.startswith("icon:"):
+        return f'<img id="{vid}" class="ic3d" src="assets/icons3d/{name[5:]}_color.png" alt="" style="{style};object-fit:contain">'
     ms = f' data-media-start="{media_start:.3f}"' if media_start else ""
     return (f'<video id="{vid}" class="clip" data-start="{start:.3f}" data-duration="{max(0.05, dur):.3f}"{ms} data-track-index="1" '
             f'src="assets/objects/{name}.webm" muted playsinline style="{style}"></video>')
@@ -81,7 +85,9 @@ def ov_object3d(cx: Ctx, cid: str, dur: float, p: dict) -> str:
         raise ValueError(f"enter must be rise, fly or drop, not {enter!r}")
     js += [f'tl.fromTo("#{cid}-pool", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.7, ease: "expo.out" }}, {at + 0.1:.3f});',
            f'tl.fromTo("#{cid}-sh", {{ opacity: 0, scaleX: 0.4 }}, {{ opacity: 1, scaleX: 1, duration: 0.6, ease: "expo.out" }}, {at + 0.2:.3f});',
-           f'tl.fromTo("#{cid}-all", {{ y: 0 }}, {{ y: -30, duration: {max(0.2, dur - at):.3f}, ease: "sine.inOut" }}, {at:.3f});']
+           f'tl.fromTo("#{cid}-all", {{ y: 0 }}, {{ y: -30, duration: {max(0.2, dur - at):.3f}, ease: "sine.inOut" }}, {at:.3f});',
+           *( [f'tl.fromTo("#{cid}-v", {{ rotationY: -18, rotation: -4 }}, {{ rotationY: 18, rotation: 4, duration: {max(0.2, dur):.3f}, ease: "sine.inOut", transformPerspective: {PERSP} }}, 0);']
+              if p["obj"].startswith("icon:") else [] )]
     if lab:
         a2 = cx.s(lab.get("at", p.get("at", 0) + 10))
         js.append(f'tl.fromTo("#{cid}-lab", {{ opacity: 0, y: 40, filter: "blur(8px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }}, {a2:.3f});')
@@ -151,3 +157,9 @@ def captions_glint(cx: Ctx, caps: list[dict], ys: list[float], size: float, font
 
 
 OVERLAYS = {"Object3D": ov_object3d, "Sweep": ov_sweep}
+
+
+def turn_icons(cid: str, dur: float) -> str:
+    """Slow 3D turn and float for every 3dicons still in a scene (sel .ic3d inside #cid)."""
+    return (f'tl.fromTo("#root .ic3d", {{ rotationY: -16, y: 5 }}, {{ rotationY: 16, y: -5, duration: {max(0.2, dur):.3f}, '
+            f'ease: "sine.inOut", transformPerspective: 700 }}, 0);')

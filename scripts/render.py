@@ -591,7 +591,11 @@ def render_sound(edl, items, project, analysis, fps, rdir) -> tuple[Path, dict, 
         x = mix.shape_sfx(x, s.get("lp"), s.get("hp"), float(s.get("pan", 0)))
         x = x / (np.abs(x).max() + 1e-9) * np.float32(10 ** (float(s.get("gain_db", mix.SFX_PEAK_DEFAULT_DB)) / 20))
         # align: the sound's peak / start / end lands on at_f; without it the file's first sample does
-        ref = mix.align_index(x, s["align"]) if s.get("align") else 0
+        # sync_s (from the library, e.g. sfx-kit): that point of the file meets at_f; repitch scales time by 1/pitch
+        if s.get("sync_s") is not None:
+            ref = max(0, int((float(s["sync_s"]) - float(s.get("in_s", 0))) / float(s.get("pitch", 1.0)) * mix.SR))
+        else:
+            ref = mix.align_index(x, s["align"]) if s.get("align") else 0
         at = mix.f2s(s["at_f"], fps) - ref
         if at < 0:
             x, at = x[-at:], 0

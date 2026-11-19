@@ -37,3 +37,8 @@ Settings adapt to the measured voice. **Do not over-process: artefacts are worse
 - **Edit music on bar lines**: shorten or extend by cutting between matching sections, never by fading mid-phrase (`end: "bar"`).
 - **End on the track's real ending or a clean hit**, timed to the last picture (`end: "natural"` / `"hit"`). Avoid long fade-outs.
 - **No vocals under speech** (tag_assets `vocals` flag, Whisper tiny on the track).
+
+## Designed sound (2026-11-19)
+
+Sound for a motion-graphics edit is designed per object and per move: craft-motion-principles.md section 9 (layer low/mid/high on a big moment, riser to impact to tail, 0.2 s between sounds, 3-5 different whooshes, one material-matched sound per 3D object). Find sounds with `scripts/find_sfx.py search`, copy them with `get`; sfx-kit sounds carry a measured `sync_s` that the mixer lands on `at_f`.
+

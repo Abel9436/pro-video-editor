@@ -36,6 +36,8 @@ Measured on our own rejected edits (s25 v2 and amh2 v2, 2026-11-17) and named in
 - **Keep the total stagger under 500 ms.** Follow-through offsets run 50–150 ms.
 - **Ask whether it's still fine on the 100th viewing.** If the move is only there to be noticed, cut it.
 
+The full tables (durations by element, material and distance; emotion and direction; ambient recipes; hierarchy; transition, camera and sound-design limits) are in craft-motion-principles.md.
+
 ## Limits used by slop_check (all warnings)
 
 | Check | Limit | Source |
@@ -48,6 +50,8 @@ Measured on our own rejected edits (s25 v2 and amh2 v2, 2026-11-17) and named in
 | `restraint_moving_camera` | 40 % of runtime | STARTING DEFAULT |
 | `restraint_punch_ins` | 1 per 3 shots | Maximov, "once every three or four cuts" |
 | `restraint_reveal_spent_once` | 2 moves | STARTING DEFAULT |
+| `restraint_sfx_gap` | no two sounds 1 frame to 0.2 s apart; same-frame stacks of at most 3 | motion-designer, sound-effects.md ("minimum 0.2 s", "layer 2-3 SFX") |
+| `restraint_sfx_repeat` | one file at most 3 times | STARTING DEFAULT (motion-designer: "3-5 different whooshes") |
 
 These are starting defaults, not measurements. Break one on purpose and say why in the EDL notes.
 
