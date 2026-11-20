@@ -135,11 +135,11 @@ def which(name: str) -> str | None:
 
 
 def run(cmd: Iterable[str], *, capture: bool = True, check: bool = True, timeout: float | None = None,
-        input_bytes: bytes | None = None, cwd: str | Path | None = None) -> subprocess.CompletedProcess:
+        input_bytes: bytes | None = None, cwd: str | Path | None = None, env: dict | None = None) -> subprocess.CompletedProcess:
     """Run an external command; raise ToolError with the tail of stderr on failure."""
     cmd = [str(c) for c in cmd]
     try:
-        proc = subprocess.run(cmd, capture_output=capture, timeout=timeout, input=input_bytes, cwd=cwd)
+        proc = subprocess.run(cmd, capture_output=capture, timeout=timeout, input=input_bytes, cwd=cwd, env=env)
     except FileNotFoundError:
         raise ToolError(f"'{cmd[0]}' is not installed or not on PATH")
     except subprocess.TimeoutExpired:

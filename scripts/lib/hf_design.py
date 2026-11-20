@@ -983,8 +983,15 @@ def root_file(cx: Ctx, T: float, layout: list[dict], scenes: list[dict], overlay
             el.append(f'<div id="{o["cid"]}" data-composition-id="{o["cid"]}" data-composition-src="compositions/{o["cid"]}.html" data-start="{o["s"]}" '
                       f'data-duration="{o["d"]}" data-track-index="{tr()}" data-track-kind="graphics" data-width="{W}" data-height="{H}" style="position:absolute;inset:0;z-index:4"></div>')
     if has_fg:
-        el.append(f'<div id="camfg" style="position:absolute;inset:0;z-index:5;transform-origin:50% {face_y * 100:.1f}%">'
-                  f'<video id="fg" class="clip" data-start="0" data-duration="{T}" data-track-index="5" src="assets/fg.webm" muted playsinline data-layout-allow-occlusion {vid}></video></div>')
+        # The cut-out only matters where something sits behind the speaker. An alpha source is extracted as
+        # full-size PNG for every frame its clip covers (~1.5 MB a frame at 1080x1920), so a whole-film clip
+        # filled 9 GB on a 139 s edit (2026-11-20); play it only over those spans (padded a few frames).
+        spans = fg_spans([(o["s"], o["s"] + o["d"]) for o in overlays if o["behind"]] +
+                         [(c["s"], c["s"] + c["d"]) for c in scenes if c.get("under")], T)
+        clips = "".join(f'<video id="fg{"" if k == 0 else k}" class="clip" data-start="{a}" data-duration="{round(b - a, 4)}" data-media-start="{a}" '
+                        f'data-track-index="5" src="assets/fg.webm" muted playsinline data-layout-allow-occlusion {vid}></video>'
+                        for k, (a, b) in enumerate(spans))
+        el.append(f'<div id="camfg" style="position:absolute;inset:0;z-index:5;transform-origin:50% {face_y * 100:.1f}%">{clips}</div>')
     for o in overlays:
         if not o["behind"]:
             el.append(f'<div id="{o["cid"]}" data-composition-id="{o["cid"]}" data-composition-src="compositions/{o["cid"]}.html" data-start="{o["s"]}" '
@@ -1206,10 +1213,22 @@ def build(d: dict, caps: list[dict], cap_ys: list[float], fps: float, W: int, H:
     return hf
 
 
+def fg_spans(spans: list, total: float, pad: float = 0.2) -> list:
+    """Merged [start, end] seconds where the speaker cut-out must play: each span padded by `pad`, clipped to
+    the film, overlapping or touching spans joined."""
+    out = []
+    for a, b in sorted((max(0.0, a - pad), min(total, b + pad)) for a, b in spans):
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return [(round(a, 4), round(b, 4)) for a, b in out if b > a]
+
+
 def fonts_inline(fonts_dir: Path, rel: str = "assets/fonts") -> str:
     """@font-face rules from fetch_fonts.py's fonts.css with URLs pointing into the project assets."""
     css = (fonts_dir / "fonts.css").read_text(encoding="utf-8") if (fonts_dir / "fonts.css").exists() else ""
-    return re.sub(r"url\('([^']+)'\)", lambda m: f"url('{rel}/{m.group(1)}')", css)
+    return re.sub(r"""url\((['"]?)([^'")]+)\1\)""", lambda m: f"url('{rel}/{m.group(2)}')", css)   # either quote style
 
 
 # ---- After Effects finishing kit (lib/hf_ae.py)

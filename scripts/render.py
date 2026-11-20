@@ -926,11 +926,24 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
                           "next": f"{' '.join(HF_CLI)} preview {hf.resolve()}  (or render.py without --design-project-only)"}, indent=1))
         sys.exit(0)
     full = out.with_name(out.stem + "_full.mp4") if preview else out
-    run(hf_cmd("render", str(hf.resolve()), "-o", str(full.resolve()), "--fps", str(fps), "--quality", "draft" if preview else "delivery",
-               "--workers", str(HF_WORKERS), "--quiet"), cwd=hf, timeout=7200)
+    hf_render_once(hf, full, fps, preview, rdir)
     if preview:
         run(["ffmpeg", "-v", "error", "-y", "-i", str(full), "-vf", f"scale={W}:{H}:flags=lanczos", "-c:v", "libx264", "-crf", "16",
              "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "copy", str(out)], timeout=1800)
+
+
+def hf_render_once(hf: Path, full: Path, fps, preview: bool, rdir: Path) -> None:
+    """Render the design project with its extract cache inside the render dir, deleted afterwards: the cache
+    holds every source frame as JPEG (alpha sources as PNG) and in the system temp dir it outlived failed
+    renders and filled the disk (2026-11-20). `--start/--end` span renders do not help: they still extract
+    each source's frames for its whole clip."""
+    xcache = rdir / "hf_xcache"
+    env = {**os.environ, "HYPERFRAMES_EXTRACT_CACHE_DIR": str(xcache.resolve())}
+    try:
+        run(hf_cmd("render", str(hf.resolve()), "-o", str(full.resolve()), "--fps", str(fps), "--quality", "draft" if preview else "delivery",
+                   "--workers", str(HF_WORKERS), "--quiet"), cwd=hf, timeout=7200, env=env)
+    finally:
+        shutil.rmtree(xcache, ignore_errors=True)
 
 
 # ----------------------------------------------------------------------------- final
