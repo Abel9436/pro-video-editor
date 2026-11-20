@@ -9,6 +9,7 @@ Overlays:
   Object3D  a rendered object in a light pool with a contact shadow: arrives with depth (rise, fly, drop),
             floats one way, leaves through the lens (push), falls (drop) or cuts; optional label with a big
             gold number.
+  Plate     a full-frame rendered shot (3D type) that can sit behind the speaker.
   Sweep     a light sweep over a cut: a soft glare band and two thin streaks cross the frame.
 Captions: captions_glint, words flip up in 3D on their spoken frame; emphasis words in the title face in a
 gold gradient crossed once by a specular glint, with a rule drawn under them.
@@ -156,7 +157,21 @@ def captions_glint(cx: Ctx, caps: list[dict], ys: list[float], size: float, font
     return scene_file(cx, "captions", cx.H, css, f'<div id="capg">{"".join(groups)}</div>', "\n".join(js), transparent=True)
 
 
-OVERLAYS = {"Object3D": ov_object3d, "Sweep": ov_sweep}
+def ov_plate(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """{obj, media_start, fade (s, default 0.12), push (end scale, default 1.04), y (px offset)}: a full-frame
+    rendered shot (assets/objects/<obj>.webm, alpha) such as extruded 3D type. With `behind: true` on the
+    overlay the speaker matte sits in front of it, so the type is in the room with him, not pasted on."""
+    W, H = cx.W, cx.H
+    fade = float(p.get("fade", 0.12))
+    vid = objvid(f"{cid}-v", p["obj"], 0, dur, f"position:absolute;left:0;top:0;width:{W}px;height:{H}px", p.get("media_start", 0.0))
+    body = f'<div id="{cid}-o" style="position:absolute;left:0;top:{p.get("y", 0)}px;width:{W}px;height:{H}px">{vid}</div>'
+    js = [f'tl.fromTo("#{cid}-o", {{ opacity: 0 }}, {{ opacity: 1, duration: {fade:.3f}, ease: "none" }}, 0);',
+          f'tl.fromTo("#{cid}-o", {{ scale: 1 }}, {{ scale: {p.get("push", 1.04)}, duration: {max(0.2, dur):.3f}, ease: "sine.inOut" }}, 0);',
+          f'tl.to("#{cid}-o", {{ opacity: 0, duration: {fade:.3f}, ease: "none" }}, {max(0, dur - fade):.3f});']
+    return scene_file(cx, cid, cx.H, "", body, "\n".join(js), transparent=True)
+
+
+OVERLAYS = {"Object3D": ov_object3d, "Sweep": ov_sweep, "Plate": ov_plate}
 
 
 def turn_icons(cid: str, dur: float) -> str:

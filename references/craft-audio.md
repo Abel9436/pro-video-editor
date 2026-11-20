@@ -40,5 +40,5 @@ Settings adapt to the measured voice. **Do not over-process: artefacts are worse
 
 ## Designed sound (2026-11-19)
 
-Sound for a motion-graphics edit is designed per object and per move: craft-motion-principles.md section 9 (layer low/mid/high on a big moment, riser to impact to tail, 0.2 s between sounds, 3-5 different whooshes, one material-matched sound per 3D object). Find sounds with `scripts/find_sfx.py search`, copy them with `get`; sfx-kit sounds carry a measured `sync_s` that the mixer lands on `at_f`.
+Sound for a motion-graphics edit is designed per object and per move: craft-motion-principles.md section 9 (layer low/mid/high on a big moment, riser to impact to tail, 0.2 s between sounds, 3-5 different whooshes, one material-matched sound per 3D object). Find sounds with `scripts/find_sfx.py search`, copy them with `get`; sfx-kit sounds carry a measured `sync_s` that the mixer lands on `at_f`. With a Freesound key (env FREESOUND_API_KEY or ~/.pve/freesound_key, never in the repo) `scripts/fetch_sfx.py` searches the API for CC0 sounds by rating, and with `--min-dur 40 --max-dur 240` finds CC0 music beds; the licence is read from each sound's API record.
 

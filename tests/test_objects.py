@@ -46,3 +46,10 @@ def test_meters_rows_carry_3d_icons_and_a_hero():
     h = S.sc_meters(_cx(), "m1", 1920, 6.0, {"under": True, "hero": {"obj": "gauge", "size": 240}, "rows": [
         {"label": "a", "icon": "drop", "at": 0, "maxAt": 30}]})
     assert "assets/objects/gauge.webm" in h and "assets/objects/drop.webm" in h
+
+
+def test_plate_is_full_frame_alpha_clip_with_fades():
+    assert "Plate" in H.OVERLAYS
+    h = O.ov_plate(_cx(), "p1", 4.0, {"obj": "t3_zero", "fade": 0.2, "push": 1.05})
+    assert 'src="assets/objects/t3_zero.webm"' in h and "width:1080px;height:1920px" in h
+    assert "scale: 1.05" in h and "opacity: 0, duration: 0.200" in h and "3.800" in h

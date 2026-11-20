@@ -6,7 +6,11 @@ Usage:
   python scripts/fetch_sfx.py --project P --source ves --query "riser"   (VideoEditingSFX)
 
 Sources (both CC0, both checked per sound on the day of download):
-  freesound (default)  Freesound search filtered to CC0; licence read from the sound page.
+  freesound (default)  Freesound search filtered to CC0. With an API key (env FREESOUND_API_KEY, or the file
+                       ~/.pve/freesound_key; never put it in the repo) it uses the APIv2 text search sorted by
+                       rating with a duration filter and reads the licence from each sound's API record;
+                       without one it scrapes the search page and reads the licence from the sound page.
+                       --min-dur/--max-dur make it a music search too (e.g. --min-dur 40 --max-dur 240).
   ves                  videoeditingsfx.com, ~100 sounds made for edits (whooshes, risers, impacts,
                        reverse hits, camera shutters, UI pops). Each page carries schema.org
                        metadata with "license": "https://creativecommons.org/publicdomain/zero/1.0/";
@@ -23,6 +27,7 @@ import argparse
 import datetime as dt
 import html
 import json
+import os
 import re
 import sys
 import time
@@ -58,6 +63,29 @@ def search(q: str) -> list[dict]:
         seen.add(sid)
         out.append({"id": int(sid), "user": user, "page": f"https://freesound.org/people/{user}/sounds/{sid}/"})
     return out
+
+
+def api_key() -> str | None:
+    k = os.environ.get("FREESOUND_API_KEY")
+    f = Path.home() / ".pve" / "freesound_key"
+    return (k or (f.read_text(encoding="utf-8").strip() if f.exists() else "")) or None
+
+
+API = "https://freesound.org/apiv2/search/text/"
+
+
+def api_search(q: str, key: str, min_dur: float, max_dur: float, n: int) -> list[dict]:
+    """APIv2 search (CC0 only, rated first); each hit carries its licence and preview URL, so no page scrape."""
+    flt = f'license:"Creative Commons 0" duration:[{min_dur} TO {max_dur}]'
+    url = API + "?" + urllib.parse.urlencode({"query": q, "filter": flt, "sort": "rating_desc", "page_size": max(n * 3, 10),
+                                              "fields": "id,name,username,license,url,previews,duration,avg_rating,num_ratings", "token": key})
+    d = json.loads(get(url).decode("utf-8"))
+    if "results" not in d:
+        raise OSError(d.get("detail", "Freesound API error"))
+    hits = sorted(d["results"], key=lambda r: (-(r.get("num_ratings", 0) >= 3), -r.get("avg_rating", 0), -r.get("num_ratings", 0)))
+    return [{"id": r["id"], "user": r["username"], "page": r["url"], "name": r["name"], "url": r["previews"]["preview-hq-mp3"],
+             "duration_s": round(r["duration"], 3), "license_url": r["license"], "rating": r.get("avg_rating")}
+            for r in hits if "publicdomain/zero" in r["license"]]
 
 
 def details(s: dict) -> dict | None:
@@ -140,6 +168,7 @@ def main() -> None:
     ap.add_argument("--plan", help='JSON file {"role": "query", ...}')
     ap.add_argument("--n", type=int, default=3, help="sounds kept per query")
     ap.add_argument("--max-dur", type=float, default=6.0, help="skip sounds longer than this (s)")
+    ap.add_argument("--min-dur", type=float, default=0.0, help="skip sounds shorter than this (s); with --max-dur 240 finds music")
     ap.add_argument("--source", choices=["freesound", "ves"], default="freesound")
     ap.add_argument("--measure-only", action="store_true", help="add peak_s/onset_s to every catalogue entry that lacks them, then exit")
     a = ap.parse_args()
@@ -165,18 +194,19 @@ def main() -> None:
     for role, q in plan.items():
         kept = []
         try:
-            hits = ves_search(q) if a.source == "ves" else search(q)
+            key = api_key() if a.source == "freesound" else None
+            hits = ves_search(q) if a.source == "ves" else (api_search(q, key, a.min_dur, a.max_dur, a.n) if key else search(q))
         except Exception as e:  # noqa: BLE001 - network errors of many kinds; report and continue
             summary[role] = {"error": f"search failed: {e}"}; continue
         for s in hits:
             if len(kept) >= a.n:
                 break
             try:
-                d = ves_details(s) if a.source == "ves" else details(s)
+                d = s if "license_url" in s else (ves_details(s) if a.source == "ves" else details(s))
                 time.sleep(0.4)
             except Exception:  # noqa: BLE001
                 continue
-            if not d or (d["duration_s"] and d["duration_s"] > a.max_dur):
+            if not d or (d["duration_s"] and not a.min_dur <= d["duration_s"] <= a.max_dur):
                 continue
             f = out_dir / f"{role}_{d['id']}.mp3"
             if not f.exists():
@@ -190,6 +220,7 @@ def main() -> None:
                     f.unlink(); continue
             entry = {**measure(f), "id": d["id"], "role": role, "query": q, "file": f"sfx/{f.name}", "name": d["name"], "author": d["user"],
                      "source": d["page"], "license": "CC0 1.0 (Creative Commons 0)", "license_checked": today,
+                     "license_source": "Freesound API record" if "license_url" in d else "sound page",
                      "duration_s": d["duration_s"], "commercial": True, "attribution": None}
             if d["id"] not in have:
                 cat["sounds"].append(entry); have.add(d["id"])
