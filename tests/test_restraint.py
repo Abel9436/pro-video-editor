@@ -47,3 +47,10 @@ def test_cutaway_and_freeze_are_schema_fields():
     assert '"cutaway": {"type": "boolean"}' in src and '"freeze_f": NONNEG' in src
     import plan_edit
     assert 'v.get("cutaway")' in open(plan_edit.__file__, encoding="utf-8").read()
+
+
+def test_distinct_plates_are_separate_shots_but_one_plate_held_long_warns():
+    shots = [{"type": "Plate", "s": i * 120, "e": i * 120 + 110, "p": {"obj": f"t3_{i}"}} for i in range(4)]   # 4 x 3.7 s of 18 s
+    assert _st(audit(_edl(overlays=shots)), "persistent_overlay") == "pass"
+    held = [{"type": "Plate", "s": 0, "e": 450, "p": {"obj": "t3_0"}}]
+    assert _st(audit(_edl(overlays=held)), "persistent_overlay") == "warn"

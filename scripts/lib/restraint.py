@@ -83,7 +83,9 @@ def audit(edl: dict) -> list[dict]:
     for o in d.get("overlays") or []:
         if o["type"] in BACKDROPS:
             continue
-        share[o["type"]] = share.get(o["type"], 0) + max(0, o["e"] - o["s"])
+        # each Plate is its own rendered shot (a different 3D beat), so it is counted per shot, not per type
+        k = f'Plate:{(o.get("p") or {}).get("obj", "")}' if o["type"] == "Plate" else o["type"]
+        share[k] = share.get(k, 0) + max(0, o["e"] - o["s"])
     worst = max(share.items(), key=lambda kv: kv[1], default=(None, 0))
     sh = worst[1] / total
     out.append(_w("persistent_overlay", sh <= PERSIST_SHARE, round(sh, 2), PERSIST_SHARE,
