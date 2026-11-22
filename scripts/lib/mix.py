@@ -92,8 +92,24 @@ def gain_to(x: np.ndarray, target: float) -> tuple[np.ndarray, float]:
     return x * np.float32(10 ** (g / 20)), g
 
 
-def voice_chain(src: Path, dst: Path, noise_floor_db: float | None) -> tuple[Path, str]:
-    """HPF, adaptive noise reduction, EQ, de-esser, compression, limiter. Gentle by design."""
+# Studio chain for a voice already cleaned by enhance_voice.py: no second denoise; the per-recording "mic" EQ
+# that enhance_voice fitted (media item voice_eq), then firmer levelling than the default chain, a soft expander
+# under the words and the limiter. Compressor and expander settings are STARTING DEFAULTS (angt take, 2026-11-22).
+STUDIO_PRE = ["highpass=f=70:p=2"]
+STUDIO_POST = ["aexciter=amount=1:drive=5:freq=6000:blend=0", "deesser=i=0.4",
+               "acompressor=threshold=0.089:ratio=3:attack=6:release=120:makeup=1.8",
+               "agate=threshold=0.004:ratio=1.8:range=0.3:attack=4:release=180", "alimiter=limit=0.95:level=disabled"]
+
+
+def voice_chain(src: Path, dst: Path, noise_floor_db: float | None, studio: bool = False,
+                eq: list[str] | None = None) -> tuple[Path, str]:
+    """HPF, adaptive noise reduction, EQ, de-esser, compression, limiter. Gentle by design.
+    studio=True: the source was cleaned by enhance_voice.py, so the studio chain runs instead (no afftdn),
+    with eq = the fitted filters from the media item."""
+    if studio:
+        chain = ",".join(STUDIO_PRE + list(eq or []) + STUDIO_POST)
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-af", chain, "-ar", str(SR), "-c:a", "pcm_f32le", str(dst)])
+        return dst, chain
     nf = noise_floor_db if noise_floor_db is not None else -90
     parts = ["highpass=f=80"]
     if -60 < nf <= BED_LEVEL_DB:     # steady noise worth reducing; cleaner = leave it, louder = a mixed bed

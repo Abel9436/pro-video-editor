@@ -149,6 +149,18 @@ def _skin_weight(rgb: np.ndarray) -> np.ndarray:
 KEYS = ("contrast", "saturation", "warmth", "lift", "shadow_tint", "highlight_tint")
 
 
+def _look_extras(rgb: np.ndarray, out: np.ndarray, look: dict) -> np.ndarray:
+    """Custom-look extras (2026-11-22): `gain` scales the whole picture (exposure, before the clamp) and
+    `tint_shadows` / `tint_highlights` add an [r, g, b] offset weighted to the shadows / highlights, for casts
+    the red-blue shadow_tint axis cannot make (a brand-green shadow, say). Values are offsets in 0-1 units."""
+    luma = np.clip(rgb, 0, 1) @ np.array([0.2126, 0.7152, 0.0722])
+    out = out * float(look.get("gain", 1.0))
+    sh = np.clip(1 - luma * 2, 0, 1)[..., None]
+    hi = np.clip(luma * 2 - 1, 0, 1)[..., None]
+    out = out + sh * np.array(look.get("tint_shadows", [0, 0, 0]), float) + hi * np.array(look.get("tint_highlights", [0, 0, 0]), float)
+    return np.clip(out, 0, 1)
+
+
 def _hue_bands(rgb: np.ndarray, out: np.ndarray, bands: list[dict]) -> np.ndarray:
     """Per-hue saturation / hue shift (Lumetri's Hue vs Sat / Hue vs Hue), measured on the INPUT hue.
     band: {"hue": centre deg (HSV: 0 red, 60 yellow, 120 green, 240 blue), "width": deg, "sat": x, "shift": deg}."""
@@ -179,6 +191,8 @@ def write_cube(name, path: Path) -> Path:
     b, gg, r = np.meshgrid(g, g, g, indexing="ij")        # .cube order: red changes fastest
     rgb = np.stack([r, gg, b], -1).reshape(-1, 3)
     out = _look_rgb(rgb, params)
+    if isinstance(name, dict):
+        out = _look_extras(rgb, out, name)
     if hues:
         out = _hue_bands(rgb, out, hues)
     w = _skin_weight(rgb)[..., None] * protect

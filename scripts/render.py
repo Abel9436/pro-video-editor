@@ -488,8 +488,11 @@ def render_sound(edl, items, project, analysis, fps, rdir) -> tuple[Path, dict, 
     def src_audio(sid):
         if sid not in srcs:
             it = items[sid]
-            p = src_path(it, False, project)
-            srcs[sid] = mix.load(mix.decode(p, adir / f"{it.get('hash', sid)}_48k.wav"))
+            if it.get("voice_clean"):          # enhance_voice.py: DeepFilterNet-cleaned, sample-aligned to the source
+                srcs[sid] = mix.load(Path(project) / it["voice_clean"])
+            else:
+                p = src_path(it, False, project)
+                srcs[sid] = mix.load(mix.decode(p, adir / f"{it.get('hash', sid)}_48k.wav"))
         return srcs[sid]
     dia = np.zeros((N, 2), np.float32)
     dlg = sorted(edl["tracks"].get("dialogue") or [], key=lambda d: d["at_f"])
@@ -527,7 +530,9 @@ def render_sound(edl, items, project, analysis, fps, rdir) -> tuple[Path, dict, 
     if dlg:
         raw = mix.save(stems / "dialogue_raw.wav", dia)
         nf = max([v for v in beds.values() if v is not None], default=None)
-        chained, chain = mix.voice_chain(raw, stems / "dialogue_chain.wav", nf)
+        studio = all(items[d["src"]].get("voice_clean") for d in dlg)
+        chained, chain = mix.voice_chain(raw, stems / "dialogue_chain.wav", nf, studio=studio,
+                                        eq=items[dlg[0]["src"]].get("voice_eq") if studio else None)
         dia = mix.load(chained)[:N]
         if dia.shape[0] < N:
             dia = np.pad(dia, ((0, N - dia.shape[0]), (0, 0)))

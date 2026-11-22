@@ -1287,3 +1287,9 @@ from . import hf_objects as _ob  # noqa: E402
 OVERLAY_FN.update(_ob.OVERLAYS)
 OVERLAYS |= set(_ob.OVERLAYS)
 CAPTION_STYLES |= {"glint"}
+
+# ---- glow type, glass lists, follow card (lib/hf_glow.py, 2026-11-22)
+from . import hf_glow as _gl  # noqa: E402
+
+OVERLAY_FN.update(_gl.OVERLAYS)
+OVERLAYS |= set(_gl.OVERLAYS)

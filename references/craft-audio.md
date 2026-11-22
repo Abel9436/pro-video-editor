@@ -15,13 +15,15 @@ Read for every project with sound: always. Audio decides whether an edit feels p
 **Normalise dialogue, music and SFX stems separately before mixing.** Hitting the loudness number is not enough: qc.py `intelligibility` re-transcribes the final mix and fails when the word error rate against the cut's words exceeds 15 % (STARTING DEFAULT), which means music or SFX is masking speech.
 
 ## Voice chain (in order)
-1. Noise reduction: ffmpeg `afftdn` only when the noise floor sits between -60 and -40 dBFS. Quieter needs nothing; louder is usually music or ambience, and denoising it produces artefacts. (DeepFilterNet/RNNoise are not used: no torch in the target environment.)
+1. Noise reduction: ffmpeg `afftdn` only when the noise floor sits between -60 and -40 dBFS. Quieter needs nothing; louder is usually music or ambience, and denoising it produces artefacts.
 2. High-pass near 80 Hz.
 3. EQ: cut mud around 300 Hz (-2 dB), add presence around 4 kHz (+1.5 dB).
 4. De-esser.
 5. Gentle compression (2.5:1).
 6. Limiter.
 Settings adapt to the measured voice. **Do not over-process: artefacts are worse than a little noise.**
+
+**Phone or camera mic, owner asks for "clean, like a good mic"** (2026-11-22): run `scripts/enhance_voice.py --project P --item ID` before rendering. It runs DeepFilterNet 3 from its release binary (no Python package or torch needed; delay-compensated, so lip sync is exact), then fits a six-band "mic" EQ that moves the speech's long-term spectrum toward the average-speech spectrum (ANSI S3.5): a far phone mic is boomy at 250-500 Hz and 9-20 dB short above 4 kHz. render.py then mixes the cleaned voice with the studio chain (no second denoise, the fitted EQ, a light exciter, de-esser, 3:1 compression, a soft expander, limiter). Measured on the angt take: noise floor -53 -> -71 dBFS; 4-8 kHz error -9.6 -> -3.0 dB. The top octave cannot be restored past the limits without lifting hiss, so a far phone mic still reads a little darker than a real close mic; say so. Do not use it on a source with a music bed in it (DeepFilterNet removes the music too).
 
 **Source with a music bed already in it** (steady level above -40 dBFS between words, measured in gaps only): render.py skips denoising, crossfades every cut with an equal-power 40 ms crossfade so the bed does not click, fills no room tone, and Claude does not add a second music track. This is common with downloaded or pre-edited clips.
 
