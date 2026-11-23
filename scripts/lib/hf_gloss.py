@@ -74,6 +74,19 @@ def _swoosh_path(w: float, seed: int) -> str:
     return d
 
 
+def _track(cid: str, p: dict, inner: str) -> tuple[str, list]:
+    """3D tracking to the baked camera: `cam` is [[t_s, scale, rot_deg, dx_px], ...] relative to the overlay,
+    read off the camera bake (zoom about `cam_origin`, cv2 rotation sign); every frame it changes gets a set, so
+    whatever sits on the wall moves with the wall through punch-ins, framing changes, whips and pans."""
+    keys = p.get("cam")
+    if not keys:
+        return inner, []
+    ox, oy = p.get("cam_origin", [540, 845])
+    js = [f'tl.set("#{cid}-cam", {{ scale: {s_:.5f}, rotation: {-r_:.3f}, x: {dx:.1f}, transformOrigin: "{ox:.0f}px {oy:.0f}px" }}, {t:.4f});'
+          for t, s_, r_, dx in keys]
+    return f'<div id="{cid}-cam" style="position:absolute;inset:0">{inner}</div>', js
+
+
 # ============================================================================== Extrude
 def ov_extrude(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     fr = 1 / cx.fps
@@ -127,8 +140,9 @@ def ov_extrude(cx: Ctx, cid: str, dur: float, p: dict) -> str:
                     f'pathLength="1" stroke-dasharray="1.02" stroke-dashoffset="1.02" style="filter:drop-shadow(0 4px 8px rgba(0,40,24,0.35))"/></svg>')
         js.append(f'tl.to("#{cid}-sw path", {{ attr: {{ "stroke-dashoffset": 0 }}, duration: {14 * fr:.3f}, ease: "power2.inOut" }}, {cx.s(sw.get("at", 10)):.3f});')
     js.append(f'tl.to("#{cid}-all", {{ opacity: 0, filter: "blur(16px)", scale: 1.08, duration: {7 * fr:.3f}, ease: "power2.in" }}, {max(0, dur - 7 * fr):.3f});')
+    inner, tj = _track(cid, p, f'<div id="{cid}-all">{"".join(body)}</div>')
     return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; transform-origin:50% {p.get('y', 0.2) * 100:.0f}%; }}",
-                      f'<div id="{cid}-all">{"".join(body)}</div>', "\n".join(js), transparent=True)
+                      inner, "\n".join(tj + js), transparent=True)
 
 
 # ============================================================================== Bloom
@@ -144,6 +158,15 @@ def ov_bloom(cx: Ctx, cid: str, dur: float, p: dict) -> str:
           f'tl.fromTo("#{cid}-b", {{ opacity: 0 }}, {{ opacity: 0.96, duration: {2 * fr:.3f}, ease: "power2.in" }}, {max(0, pk - 2 * fr):.3f});',
           f'tl.to("#{cid}-b", {{ opacity: 0, duration: {6 * fr:.3f}, ease: "power2.out" }}, {pk + 2 * fr:.3f});',
           f'tl.to("#{cid}-a", {{ opacity: 0, duration: {8 * fr:.3f}, ease: "power2.out" }}, {pk + 2 * fr:.3f});']
+    if p.get("kind") == "burn":
+        # reference B 5.6-6.0 s: a glow grows out of the frame, whites out, and a coloured leak sweeps across
+        # (diagonal, ~14 frames, screen blend); tinted to the brand: mint and a warm gold
+        for i, (c1, x0, y0, x1, y1, sz) in enumerate((("rgba(150,255,200,0.95)", 85, 95, 10, 20, 1500), ("rgba(255,226,160,0.9)", 110, 60, 35, -10, 1200))):
+            body += (f'<div id="{cid}-l{i}" style="position:absolute;left:0;top:0;width:{sz}px;height:{sz}px;margin:{-sz / 2:.0f}px 0 0 {-sz / 2:.0f}px;border-radius:50%;'
+                     f'background:radial-gradient(circle, {c1} 0%, rgba(255,255,255,0) 68%);mix-blend-mode:screen;opacity:0"></div>')
+            js.append(f'tl.fromTo("#{cid}-l{i}", {{ x: {x0 * cx.W / 100:.0f}, y: {y0 * cx.H / 100:.0f}, scale: 0.3, opacity: 0 }}, '
+                      f'{{ x: {x1 * cx.W / 100:.0f}, y: {y1 * cx.H / 100:.0f}, scale: 1.4, opacity: 1, duration: {9 * fr:.3f}, ease: "power2.in" }}, {max(0, pk - 6 * fr + i * fr):.3f});')
+            js.append(f'tl.to("#{cid}-l{i}", {{ opacity: 0, scale: 1.8, duration: {7 * fr:.3f}, ease: "power2.out" }}, {pk + 3 * fr:.3f});')
     return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", f'<div id="{cid}-all">{body}</div>', "\n".join(js), transparent=True)
 
 
@@ -181,10 +204,11 @@ def ov_glasscard(cx: Ctx, cid: str, dur: float, p: dict) -> str:
             f'padding:0 {h * 0.2:.0f}px;box-sizing:border-box;{glass_css(rad, "#F4FFF8", p.get("glass_alpha", 0.66))}">{_spec(rad)}{icon}<div style="min-width:0">{title}{sub}</div>{badge}</div>')
     body = [card]
     from_ = p.get("from", "bottom")
-    x0, y0 = {"bottom": (0, 160), "left": (-260, 0), "right": (260, 0)}[from_]
+    x0, y0 = {"bottom": (0, 160), "left": (-260, 0), "right": (260, 0), "sweep": (-980, 40)}[from_]
     at = cx.s(p.get("at", 0))
-    js = [f'tl.fromTo("#{cid}-c", {{ opacity: 0, x: {x0}, y: {y0}, rotationX: 38, rotationZ: {-6 if from_ != "right" else 6}, scale: 0.9, filter: "blur(14px)", transformPerspective: 900 }}, '
-          f'{{ opacity: 1, x: 0, y: 0, rotationX: 0, rotationZ: 0, scale: 1, filter: "blur(0px)", duration: {14 * fr:.3f}, ease: "expo.out" }}, {at:.3f});',
+    rot0 = "rotationY: 78, rotationX: 10, rotationZ: -10" if from_ == "sweep" else f'rotationX: 38, rotationZ: {-6 if from_ != "right" else 6}'
+    js = [f'tl.fromTo("#{cid}-c", {{ opacity: 0, x: {x0}, y: {y0}, {rot0}, scale: 0.9, filter: "blur(14px)", transformPerspective: 900 }}, '
+          f'{{ opacity: 1, x: 0, y: 0, rotationX: 0, rotationY: 0, rotationZ: 0, scale: 1, filter: "blur(0px)", duration: {(18 if from_ == "sweep" else 14) * fr:.3f}, ease: "expo.out" }}, {at:.3f});',
           f'tl.to("#{cid}-c", {{ y: -10, rotationZ: -0.8, duration: {max(0.3, dur - at - 0.5):.3f}, ease: "sine.inOut" }}, {at + 14 * fr:.3f});']
     js.append(f'tl.set("#{cid}-st", {{ scaleX: 0, transformOrigin: "0% 50%" }}, 0);')
     if p.get("strike_at") is not None:
@@ -285,7 +309,8 @@ def ov_graphwall(cx: Ctx, cid: str, dur: float, p: dict) -> str:
            f"box-shadow:inset -6px -8px 14px rgba(0,0,0,0.35), 0 10px 22px rgba(1,50,32,0.35); }} "
            f"#{cid}-all .hl {{ position:absolute; left:18%; top:12%; width:36%; height:26%; border-radius:50%; background:radial-gradient(ellipse, rgba(255,255,255,0.95), rgba(255,255,255,0)); }} "
            f"#{cid}-all .lb {{ position:absolute; width:180px; text-align:center; font-family:{F_UI}; font-weight:800; font-size:26px; color:{ink}; letter-spacing:0.02em; }}")
-    return scene_file(cx, cid, cx.H, css, f'<div id="{cid}-all">{"".join(svg)}{"".join(divs)}</div>', "\n".join(js), transparent=True)
+    inner, tj = _track(cid, p, f'<div id="{cid}-all">{"".join(svg)}{"".join(divs)}</div>')
+    return scene_file(cx, cid, cx.H, css, inner, "\n".join(tj + js), transparent=True)
 
 
 # ============================================================================== full-screen brand scene
@@ -422,5 +447,83 @@ def ov_commentbox(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", f'<div id="{cid}-all">{"".join(body)}</div>', "\n".join(js), transparent=True)
 
 
-OVERLAYS = {"Extrude": ov_extrude, "Bloom": ov_bloom, "GlassCard": ov_glasscard, "GraphWall": ov_graphwall,
+# ============================================================================== card fan
+def _card_inner(cid: str, k: int, c: dict, w: float, h: float) -> str:
+    kind = c.get("kind", "logo")
+    if kind == "logo":
+        hero = f'<img src="{c["icon"]}" style="width:{w * 0.52:.0f}px;height:{w * 0.52:.0f}px;object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.45))"/>'
+    elif kind == "graph":
+        nodes, edges = _graph(7, -w * 0.3, -w * 0.3, w * 0.6, w * 0.6, 5 + k)
+        lines = "".join(f'<line x1="{nodes[a][0]:.0f}" y1="{nodes[a][1]:.0f}" x2="{nodes[b][0]:.0f}" y2="{nodes[b][1]:.0f}" stroke="rgba(190,255,220,0.8)" stroke-width="4"/>' for a, b in edges)
+        sph = "".join(_sphere(f"{cid}-k{k}n{i}", nx, ny, 22 * s_ + 6) for i, (nx, ny, s_) in enumerate(nodes))
+        hero = (f'<div style="position:relative;width:{w * 0.6:.0f}px;height:{w * 0.6:.0f}px"><div style="position:absolute;left:50%;top:50%;width:0;height:0">'
+                f'<svg style="position:absolute;overflow:visible" width="1" height="1">{lines}</svg>{sph}</div></div>')
+    else:
+        hero = (f'<div style="font-family:{F_EXT};font-size:{w * 0.42:.0f}px;line-height:1;background:linear-gradient(180deg,#FFFFFF,#7FF0B4);-webkit-background-clip:text;'
+                f'background-clip:text;color:transparent;filter:drop-shadow(0 8px 0 #00170E)">{esc(c["t"])}</div>')
+    return (f'{_spec(34)}<div style="flex:1;display:flex;align-items:center;justify-content:center">{hero}</div>'
+            f'<div style="font-family:{F_UI};font-weight:800;font-size:{w * 0.13:.0f}px;color:#F2FFF7;white-space:nowrap">{esc(c.get("title", ""))}</div>'
+            f'<div style="font-family:{F_UI};font-weight:700;font-size:{w * 0.085:.0f}px;color:#9FF0C4;margin:4px 0 {h * 0.07:.0f}px;white-space:nowrap">{esc(c.get("sub", ""))}</div>')
+
+
+def ov_cardfan(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """Reference B 1.6-2.0 s: a light streak shoots up from below, bursts, and three tall cards fan out above the
+    speaker (outer ones tilted ~13 deg and lower, the middle one in front), then float. STARTING DEFAULTS."""
+    fr = 1 / cx.fps
+    at = cx.s(p.get("at", 0))
+    w, h = p.get("w", 270), p.get("h", 440)
+    ccx, ccy = p.get("x", 0.5) * cx.W, p.get("y", 0.17) * cx.H
+    spread, tilt = p.get("spread", 300), p.get("tilt", 13)
+    cards = p["cards"]
+    n = len(cards)
+    body = [f'<div id="{cid}-sk" style="position:absolute;left:{ccx - 5:.0f}px;top:{ccy:.0f}px;width:10px;height:{cx.H * 0.85 - ccy:.0f}px;border-radius:5px;'
+            f'background:linear-gradient(180deg,#FFFFFF,#7CF2B4 30%,rgba(54,224,138,0));box-shadow:0 0 24px #7CF2B4,0 0 60px rgba(54,224,138,0.8);transform-origin:50% 100%;opacity:0"></div>',
+            f'<div id="{cid}-fl" style="position:absolute;left:{ccx - 300:.0f}px;top:{ccy - 300:.0f}px;width:600px;height:600px;border-radius:50%;'
+            f'background:radial-gradient(circle,#FFFFFF 0%,rgba(160,255,205,0.85) 22%,rgba(54,224,138,0) 65%);mix-blend-mode:screen;opacity:0"></div>']
+    js = [f'tl.fromTo("#{cid}-sk", {{ scaleY: 0, opacity: 1 }}, {{ scaleY: 1, opacity: 1, duration: {5 * fr:.3f}, ease: "power3.in" }}, {at:.3f});',
+          f'tl.to("#{cid}-sk", {{ opacity: 0, duration: {4 * fr:.3f} }}, {at + 5 * fr:.3f});',
+          f'tl.fromTo("#{cid}-fl", {{ scale: 0.1, opacity: 0 }}, {{ scale: 1.3, opacity: 1, duration: {4 * fr:.3f}, ease: "power2.out" }}, {at + 4 * fr:.3f});',
+          f'tl.to("#{cid}-fl", {{ scale: 1.8, opacity: 0, duration: {8 * fr:.3f}, ease: "power2.out" }}, {at + 8 * fr:.3f});']
+    order = sorted(range(n), key=lambda k: -abs(k - (n - 1) / 2))      # outer cards painted first, middle on top
+    for k in order:
+        off = k - (n - 1) / 2
+        x, y = ccx + off * spread - w / 2, ccy - h / 2 + abs(off) * 34
+        body.append(f'<div id="{cid}-c{k}" class="cd" style="left:{x:.0f}px;top:{y:.0f}px;width:{w}px;height:{h}px;z-index:{10 - int(abs(off) * 2)}">'
+                    f'{_card_inner(cid, k, cards[k], w, h)}</div>')
+        t0 = at + (5 + abs(off) * 2) * fr
+        js.append(f'tl.fromTo("#{cid}-c{k}", {{ x: {-off * spread:.0f}, y: {-abs(off) * 34 + 60:.0f}, scale: 0.25, rotationY: {-off * 70:.0f}, rotationZ: 0, opacity: 0, filter: "blur(16px)", transformPerspective: 1100 }}, '
+                  f'{{ x: 0, y: 0, scale: 1, rotationY: {off * -14:.0f}, rotationZ: {off * tilt:.1f}, opacity: 1, filter: "blur(0px)", duration: {13 * fr:.3f}, ease: "back.out(1.5)" }}, {t0:.3f});')
+        bob = max(0.3, dur - (t0 + 13 * fr) - 0.3)
+        js.append(f'tl.to("#{cid}-c{k}", {{ y: {-14 if k % 2 else 12}, rotationY: {off * -6:.0f}, duration: {bob:.3f}, ease: "sine.inOut" }}, {t0 + 13 * fr:.3f});')
+    js.append(f'tl.to("#{cid}-all .cd", {{ y: -120, opacity: 0, filter: "blur(14px)", duration: {7 * fr:.3f}, ease: "power2.in", stagger: {fr:.4f} }}, {max(0, dur - 9 * fr):.3f});')
+    css = (f"#{cid}-all {{ position:absolute; inset:0; }} #{cid}-all .cd {{ position:absolute; display:flex; flex-direction:column; align-items:center; box-sizing:border-box; "
+           f"border-radius:34px; overflow:hidden; background:linear-gradient(165deg, #12804F 0%, #04603C 38%, {BRAND} 78%, #001A10 100%); "
+           f"border:2px solid rgba(255,255,255,0.55); box-shadow:inset 0 2px 1px rgba(255,255,255,0.7), inset 3px 0 4px rgba(255,70,90,0.15), inset -3px 0 4px rgba(70,140,255,0.18), "
+           f"0 34px 60px rgba(0,30,18,0.45), 0 8px 18px rgba(0,30,18,0.3); }} "
+           f"#{cid}-all .nd {{ position:absolute; border-radius:50%; background:radial-gradient(circle at 34% 30%, #E6FFF1 0%, #7CF2B4 16%, #18A464 46%, #035233 78%, #00180E 100%); }} "
+           f"#{cid}-all .hl {{ position:absolute; left:18%; top:12%; width:36%; height:26%; border-radius:50%; background:radial-gradient(ellipse, rgba(255,255,255,0.95), rgba(255,255,255,0)); }}")
+    inner, tj = _track(cid, p, f'<div id="{cid}-all">{"".join(body)}</div>')
+    return scene_file(cx, cid, cx.H, css, inner, "\n".join(tj + js), transparent=True)
+
+
+# ============================================================================== perspective word
+def ov_persptext(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """Reference A 4.3-4.6 s: a word lying on a tilted plane across the speaker, whipping in sideways with
+    motion blur, drifting, whipping out. STARTING DEFAULTS."""
+    fr = 1 / cx.fps
+    at = cx.s(p.get("at", 0))
+    size, y = p.get("size", 230), p.get("y", 0.72) * cx.H
+    d = p.get("dir", 1)
+    word = (f'<div id="{cid}-w" style="position:absolute;left:0;right:0;top:{y - size * 0.6:.0f}px;text-align:center;white-space:nowrap;font-family:{F_EXT};font-size:{size}px;'
+            f'line-height:1.05;transform:perspective(900px) rotateX({p.get("rx", 48)}deg) rotateZ({p.get("rz", -7)}deg)">'
+            f'<span style="position:relative;display:inline-block"><span style="color:{SIDE};text-shadow:{_extrude_shadow(14, SIDE, 0.3, 1.1)}">{esc(p["t"])}</span>'
+            f'<span style="position:absolute;left:0;top:0;background:linear-gradient(180deg,#FFFFFF 0%,#D5FBE6 55%,#7FE0AE 100%);-webkit-background-clip:text;background-clip:text;color:transparent">{esc(p["t"])}</span></span></div>')
+    js = [f'tl.fromTo("#{cid}-m", {{ x: {-1300 * d}, opacity: 0, filter: "blur(26px)" }}, {{ x: 0, opacity: 1, filter: "blur(0px)", duration: {9 * fr:.3f}, ease: "expo.out" }}, {at:.3f});',
+          f'tl.to("#{cid}-m", {{ x: {40 * d}, duration: {max(0.2, dur - at - 0.6):.3f}, ease: "none" }}, {at + 9 * fr:.3f});',
+          f'tl.to("#{cid}-m", {{ x: {1400 * d}, opacity: 0, filter: "blur(26px)", duration: {6 * fr:.3f}, ease: "power3.in" }}, {max(0, dur - 6 * fr):.3f});']
+    inner, tj = _track(cid, p, f'<div id="{cid}-all"><div id="{cid}-m" style="position:absolute;inset:0">{word}</div></div>')
+    return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", inner, "\n".join(tj + js), transparent=True)
+
+
+OVERLAYS = {"CardFan": ov_cardfan, "PerspText": ov_persptext, "Extrude": ov_extrude, "Bloom": ov_bloom, "GlassCard": ov_glasscard, "GraphWall": ov_graphwall,
             "BrandScene": ov_brandscene, "CommentBox": ov_commentbox}
