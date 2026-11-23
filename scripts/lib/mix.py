@@ -106,6 +106,10 @@ def voice_chain(src: Path, dst: Path, noise_floor_db: float | None, studio: bool
     """HPF, adaptive noise reduction, EQ, de-esser, compression, limiter. Gentle by design.
     studio=True: the source was cleaned by enhance_voice.py, so the studio chain runs instead (no afftdn),
     with eq = the fitted filters from the media item."""
+    if studio == "ready":        # the owner's own finished voice-over: only a low cut and the limiter
+        chain = "highpass=f=60:p=2,alimiter=limit=0.95:level=disabled"
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-af", chain, "-ar", str(SR), "-c:a", "pcm_f32le", str(dst)])
+        return dst, chain
     if studio:
         chain = ",".join(STUDIO_PRE + list(eq or []) + STUDIO_POST)
         run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-af", chain, "-ar", str(SR), "-c:a", "pcm_f32le", str(dst)])

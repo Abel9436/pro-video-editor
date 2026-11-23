@@ -1293,3 +1293,9 @@ from . import hf_glow as _gl  # noqa: E402
 
 OVERLAY_FN.update(_gl.OVERLAYS)
 OVERLAYS |= set(_gl.OVERLAYS)
+
+# ---- glossy extruded type, liquid glass, knowledge-graph wall, brand scenes, bloom (lib/hf_gloss.py, 2026-11-23)
+from . import hf_gloss as _gs  # noqa: E402
+
+OVERLAY_FN.update(_gs.OVERLAYS)
+OVERLAYS |= set(_gs.OVERLAYS)

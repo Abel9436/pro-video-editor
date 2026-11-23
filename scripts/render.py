@@ -531,6 +531,8 @@ def render_sound(edl, items, project, analysis, fps, rdir) -> tuple[Path, dict, 
         raw = mix.save(stems / "dialogue_raw.wav", dia)
         nf = max([v for v in beds.values() if v is not None], default=None)
         studio = all(items[d["src"]].get("voice_clean") for d in dlg)
+        if studio and all(items[d["src"]].get("voice_ready") for d in dlg):
+            studio = "ready"          # voice_clean is a finished voice-over supplied by the owner
         chained, chain = mix.voice_chain(raw, stems / "dialogue_chain.wav", nf, studio=studio,
                                         eq=items[dlg[0]["src"]].get("voice_eq") if studio else None)
         dia = mix.load(chained)[:N]
