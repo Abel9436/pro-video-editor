@@ -365,7 +365,7 @@ def ov_brandscene(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     else:
         # the stat: a huge glass number with a gloss sweep, and two bars (before / after) at their true ratio
         st = p.get("stat", "71×")
-        body.append(f'<div id="{cid}-num" style="position:absolute;left:0;right:0;top:{hy - 260:.0f}px;text-align:center;font-family:{F_EXT};font-size:430px;line-height:1;'
+        body.append(f'<div id="{cid}-num" style="position:absolute;left:0;right:0;top:{hy - 260:.0f}px;text-align:center;font-family:{F_EXT};font-size:{p.get("stat_size", 430)}px;line-height:1;'
                     f'white-space:nowrap"><span style="position:relative;display:inline-block">'
                     f'<span style="color:#012616;text-shadow:{_extrude_shadow(20, "#00140C")}">{esc(st)}</span>'
                     f'<span style="position:absolute;left:0;top:0;background:linear-gradient(180deg, #FFFFFF 0%, #C9F7DD 40%, #5FD497 100%);-webkit-background-clip:text;background-clip:text;color:transparent">{esc(st)}</span>'
@@ -525,5 +525,22 @@ def ov_persptext(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", inner, "\n".join(tj + js), transparent=True)
 
 
+_DEF_FONTS = (F_EXT, F_SCRIPT, F_SERIF)
+
+
+def _fonted(fn):
+    """Each video picks its own display / script / serif faces (design.brand font_ext, font_script, font_serif);
+    the module constants are the defaults (the Graphify set)."""
+    def run(cx, cid, dur, p):
+        global F_EXT, F_SCRIPT, F_SERIF
+        b = cx.brand or {}
+        F_EXT, F_SCRIPT, F_SERIF = b.get("font_ext", _DEF_FONTS[0]), b.get("font_script", _DEF_FONTS[1]), b.get("font_serif", _DEF_FONTS[2])
+        return fn(cx, cid, dur, p)
+    run.__name__, run.__doc__ = fn.__name__, fn.__doc__
+    return run
+
+
 OVERLAYS = {"CardFan": ov_cardfan, "PerspText": ov_persptext, "Extrude": ov_extrude, "Bloom": ov_bloom, "GlassCard": ov_glasscard, "GraphWall": ov_graphwall,
             "BrandScene": ov_brandscene, "CommentBox": ov_commentbox}
+
+OVERLAYS = {k: _fonted(v) for k, v in OVERLAYS.items()}
