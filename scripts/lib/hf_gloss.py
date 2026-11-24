@@ -24,6 +24,12 @@ Overlays (times are frames relative to the overlay's start):
   GraphWall  {x, y, w, h, at, nodes, seed, labels, trace_at, trace_len, ink, fade_at}
   BrandScene {mode: name|stat, at, kicker, title, script, words: [[text, at]], stat, bars: {at, before, after}}
   CommentBox {y, at, text, type_at, send_at, dm_at, dm_title, dm_sub, avatar}
+  Scene3D    {scene, title, line, tiny, labels, *_at, *_y, *_size}  a full-screen Blender shot (opaque webm in
+             assets/objects) under reference-B titles; zoom-through in, push through the lens out (2026-11-24)
+  ObjCard    {obj, loop_s, x, y, w, h, at, title, sub, badge, side, glow, strike_at, stamp}  smoked-glass card with
+             a looping Blender glass object standing out of its top edge, swinging in on a curved track
+Added for the Jev v2 edit (work/qqdq/refs2: a poster-card carousel, a glass-folder tutorial, a card burst); the
+owner asked for Blender motion objects instead of 3D icons and for glass cards instead of green ones.
 """
 from __future__ import annotations
 
@@ -525,22 +531,159 @@ def ov_persptext(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", inner, "\n".join(tj + js), transparent=True)
 
 
-_DEF_FONTS = (F_EXT, F_SCRIPT, F_SERIF)
+# ============================================================================== Blender scenes and glass objects
+F_HEAD = "'Plus Jakarta Sans', 'Manrope', sans-serif"
+
+
+def _loopvid(cid: str, name: str, dur: float, loop_s: float, style: str) -> str:
+    """A seamless-loop Blender object (assets/objects/<name>.webm, VP9 alpha) chained end to end for `dur`."""
+    from .hf_objects import objvid
+    out, t, k = [], 0.0, 0
+    while t < dur - 1e-3:
+        out.append(objvid(f"{cid}-o{k}", name, t, min(loop_s, dur - t), style))
+        t += loop_s
+        k += 1
+    return "".join(out)
+
+
+def _title_b(cid: str, cx: Ctx, fr: float, p: dict) -> tuple[list, list]:
+    """Reference B's title block: a heavy word that dissolves in out of blur letter by letter, a smaller line
+    that arrives word by word (each from below with blur, ~4 frames apart), then tiny wide-spaced words one at a
+    time. All STARTING DEFAULTS read off B 2.8-5.6 s."""
+    body, js = [], []
+    ty = p.get("title_y", 0.10) * cx.H
+    size = p.get("title_size", 190)
+    if p.get("title"):
+        # the gradient sits on each letter: background-clip:text on a parent does not paint into inline-block
+        # children, and the letters must be inline-block to animate (first v2 stills had no title at all)
+        grad = ("background:linear-gradient(180deg,#FFFFFF 0%,#E4FFF0 45%,#7EF0B4 100%);-webkit-background-clip:text;background-clip:text;"
+                "color:transparent;padding:0 0.02em")
+        chars = "".join(f'<span class="{cid}-tc" style="display:inline-block;{grad}">{esc(c)}</span>' if c != " " else
+                        '<span style="display:inline-block;width:0.28em"></span>' for c in p["title"])
+        body.append(f'<div style="position:absolute;left:0;right:0;top:{ty:.0f}px;text-align:center;font-family:{F_HEAD};font-weight:800;font-size:{size}px;line-height:1.1;'
+                    f'letter-spacing:-0.02em;white-space:nowrap;filter:drop-shadow(0 0 26px rgba(90,255,160,0.45))">{chars}</div>')
+        js.append(f'tl.fromTo(".{cid}-tc", {{ opacity: 0, scale: 1.35, filter: "blur(22px)" }}, {{ opacity: 1, scale: 1, filter: "blur(0px)", '
+                  f'duration: {11 * fr:.3f}, ease: "expo.out", stagger: {1.5 * fr:.4f} }}, {cx.s(p.get("title_at", 2)):.3f});')
+    if p.get("line"):
+        ly = ty + size * 0.98
+        words = p["line"].split(" ")
+        spans = "".join(f'<span class="{cid}-lw" style="display:inline-block;margin:0 0.13em">{esc(w)}</span>' for w in words)
+        body.append(f'<div style="position:absolute;left:0;right:0;top:{ly:.0f}px;text-align:center;font-family:{F_HEAD};font-weight:700;font-size:{p.get("line_size", 64)}px;'
+                    f'color:#F4FFF8;white-space:nowrap;text-shadow:0 0 18px rgba(90,255,160,0.35), 0 6px 18px rgba(0,0,0,0.5)">{spans}</div>')
+        js.append(f'tl.fromTo(".{cid}-lw", {{ opacity: 0, y: 26, filter: "blur(12px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", duration: {8 * fr:.3f}, '
+                  f'ease: "expo.out", stagger: {4 * fr:.4f} }}, {cx.s(p.get("line_at", 10)):.3f});')
+    if p.get("tiny"):
+        ny = ty + size * 0.98 + p.get("line_size", 64) * 1.35
+        words = p["tiny"].split(" ")
+        spans = "".join(f'<span class="{cid}-nw" style="display:inline-block">{esc(w)}</span>' for w in words)
+        body.append(f'<div style="position:absolute;left:{cx.W * 0.12:.0f}px;right:{cx.W * 0.12:.0f}px;top:{ny:.0f}px;display:flex;justify-content:space-between;'
+                    f'font-family:{F_HEAD};font-weight:600;font-size:{p.get("tiny_size", 30)}px;letter-spacing:0.08em;color:rgba(220,255,236,0.82);white-space:nowrap">{spans}</div>')
+        js.append(f'tl.fromTo(".{cid}-nw", {{ opacity: 0, filter: "blur(8px)" }}, {{ opacity: 1, filter: "blur(0px)", duration: {6 * fr:.3f}, ease: "power2.out", '
+                  f'stagger: {3 * fr:.4f} }}, {cx.s(p.get("tiny_at", 18)):.3f});')
+    return body, js
+
+
+def ov_scene3d(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """A full-screen Blender shot (assets/objects/<scene>.webm, opaque, rendered at the delivery size) with the
+    reference-B title block over it. In: a zoom-through (the shot arrives 18 % too big and out of focus and
+    settles in ~9 frames); out: a push into the lens with blur over the last ~6 frames, so the cut back to the
+    speaker reads as the camera going through the glass. {scene, title, line, tiny, *_at, *_y, *_size,
+    labels: [{t, at, y, size}]} STARTING DEFAULTS."""
+    from .hf_objects import objvid
+    fr = 1 / cx.fps
+    body = [f'<div id="{cid}-v" style="position:absolute;inset:0">'
+            f'{objvid(cid + "-clip", p["scene"], 0, dur, "position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover")}</div>']
+    tb, js = _title_b(cid, cx, fr, p)
+    body += tb
+    for i, lab in enumerate(p.get("labels", [])):
+        body.append(f'<div id="{cid}-lb{i}" style="position:absolute;left:0;right:0;top:{lab.get("y", 0.86) * cx.H:.0f}px;text-align:center;font-family:{F_HEAD};'
+                    f'font-weight:{lab.get("weight", 600)};font-size:{lab.get("size", 34)}px;letter-spacing:{lab.get("track", 0.12)}em;color:rgba(225,255,238,0.86);white-space:nowrap">{esc(lab["t"])}</div>')
+        js.append(f'tl.fromTo("#{cid}-lb{i}", {{ opacity: 0, y: 14, filter: "blur(8px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", duration: {8 * fr:.3f}, ease: "expo.out" }}, {cx.s(lab.get("at", 20)):.3f});')
+    js += [f'tl.fromTo("#{cid}-v", {{ scale: 1.18, filter: "blur(18px) brightness(1.6)" }}, {{ scale: 1, filter: "blur(0px) brightness(1)", duration: {9 * fr:.3f}, ease: "expo.out" }}, 0);',
+           f'tl.fromTo("#{cid}-all", {{ opacity: 0 }}, {{ opacity: 1, duration: {2 * fr:.3f} }}, 0);',
+           # explicit from-filter: tweening filter from "none" made GSAP start at brightness(0), a black frame then a
+           # fade up (QC black_frames, v2). No opacity fade either: the picture under a scene span is blanked.
+           f'tl.fromTo("#{cid}-all", {{ scale: 1, filter: "blur(0px) brightness(1)" }}, {{ scale: 1.28, filter: "blur(16px) brightness(1.4)", '
+           f'duration: {6 * fr:.3f}, ease: "power3.in", immediateRender: false }}, {max(0, dur - 6 * fr):.3f});']
+    css = f"#{cid}-all {{ position:absolute; inset:0; background:#020604; transform-origin:50% 48%; }}"
+    return scene_file(cx, cid, cx.H, css, f'<div id="{cid}-all">{"".join(body)}</div>', "\n".join(js), transparent=True)
+
+
+def ov_objcard(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """Reference C's song card, on the speaker: smoked glass (dark, blurred, saturated), a lit rim that is
+    brighter on top, a soft green outer glow, white title and a pale line, a glass pill badge; on its left a
+    Blender glass object that stands out of the card's top edge and turns slowly (a seamless loop). It swings in
+    along a curved track (reference A's carousel: rotationY about a pivot far behind the card) and swings out
+    the other way. {obj, loop_s, x, y, w, h, at, title, sub, badge, side, strike_at, stamp} STARTING DEFAULTS."""
+    fr = 1 / cx.fps
+    x, y, w, h = p.get("x", 80), p.get("y", 0.73) * cx.H, p.get("w", 920), p.get("h", 210)
+    rad = p.get("radius", h * 0.30)
+    osz = h * p.get("obj_k", 1.55)
+    pad = osz * 0.86
+    glow = p.get("glow", "#4BF09A")
+    badge = (f'<div style="margin-left:auto;padding:{h * 0.06:.0f}px {h * 0.15:.0f}px;border-radius:999px;background:rgba(255,255,255,0.12);'
+             f'border:1.5px solid rgba(255,255,255,0.45);box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);color:#FFFFFF;font-family:{F_HEAD};font-weight:800;'
+             f'font-size:{h * 0.16:.0f}px;letter-spacing:0.06em;white-space:nowrap">{esc(p["badge"])}</div>' if p.get("badge") else "")
+    sub = (f'<div style="font-family:{F_HEAD};font-weight:600;font-size:{h * 0.155:.0f}px;color:rgba(214,255,232,0.78);margin-top:4px;white-space:nowrap">{esc(p["sub"])}</div>'
+           if p.get("sub") else "")
+    title = (f'<div style="position:relative;display:inline-block;font-family:{F_HEAD};font-weight:800;font-size:{h * 0.25:.0f}px;letter-spacing:-0.01em;color:#FFFFFF;white-space:nowrap">'
+             f'{esc(p["title"])}<div id="{cid}-st" style="position:absolute;left:-4%;right:-4%;top:52%;height:{max(5, h * 0.035):.0f}px;border-radius:9px;background:#FF5A64;'
+             f'box-shadow:0 0 12px rgba(255,90,100,0.8)"></div></div>')
+    card = (f'<div id="{cid}-c" style="position:absolute;left:{x}px;top:{y:.0f}px;width:{w}px;height:{h}px;display:flex;align-items:center;'
+            f'padding:0 {h * 0.18:.0f}px 0 {pad:.0f}px;box-sizing:border-box;border-radius:{rad:.0f}px;'
+            f'background:linear-gradient(165deg, rgba(40,58,50,0.62) 0%, rgba(10,18,15,0.58) 55%, rgba(4,10,8,0.66) 100%);'
+            f'backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);'
+            f'border:1.5px solid rgba(255,255,255,0.22);'
+            f'box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(255,255,255,0.10), 0 0 46px {_rgba(glow, 0.30)}, 0 24px 60px rgba(0,0,0,0.45)">'
+            f'<div style="position:absolute;inset:0;border-radius:{rad:.0f}px;background:linear-gradient(100deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.0) 30%);pointer-events:none"></div>'
+            f'<div style="position:absolute;left:{h * 0.08:.0f}px;top:{(h - h * 0.84) / 2:.0f}px;width:{pad - h * 0.2:.0f}px;height:{h * 0.84:.0f}px;border-radius:{rad * 0.7:.0f}px;'
+            f'background:radial-gradient(circle at 50% 40%, {_rgba(glow, 0.38)} 0%, {_rgba(glow, 0.10)} 55%, transparent 75%)"></div>'
+            f'<div id="{cid}-ob" style="position:absolute;left:{(pad - osz) / 2 + h * 0.02:.0f}px;top:{h - osz * 0.92:.0f}px;width:{osz:.0f}px;height:{osz:.0f}px">'
+            f'{_loopvid(cid, p["obj"], dur, p.get("loop_s", 1.6), f"position:absolute;left:0;top:0;width:{osz:.0f}px;height:{osz:.0f}px")}</div>'
+            f'<div style="min-width:0;position:relative">{title}{sub}</div>{badge}</div>')
+    body = [card]
+    at = cx.s(p.get("at", 0))
+    side = -1 if p.get("side", "left") == "left" else 1
+    js = [f'tl.fromTo("#{cid}-c", {{ opacity: 0, rotationY: {side * 62}, x: {side * 260}, scale: 0.86, filter: "blur(12px)", transformPerspective: 1400, '
+          f'transformOrigin: "50% 50% -1100px" }}, {{ opacity: 1, rotationY: 0, x: 0, scale: 1, filter: "blur(0px)", duration: {16 * fr:.3f}, ease: "expo.out" }}, {at:.3f});',
+          f'tl.fromTo("#{cid}-ob", {{ scale: 0.2, y: 60, rotation: {side * -25} }}, {{ scale: 1, y: 0, rotation: 0, duration: {14 * fr:.3f}, ease: "back.out(1.8)" }}, {at + 5 * fr:.3f});',
+          f'tl.to("#{cid}-c", {{ y: -10, duration: {max(0.3, dur - at - 0.5):.3f}, ease: "sine.inOut" }}, {at + 16 * fr:.3f});',
+          f'tl.set("#{cid}-st", {{ scaleX: 0, transformOrigin: "0% 50%" }}, 0);']
+    if p.get("strike_at") is not None:
+        sa = cx.s(p["strike_at"])
+        js.append(f'tl.to("#{cid}-st", {{ scaleX: 1, duration: {6 * fr:.3f}, ease: "power3.out" }}, {sa:.3f});')
+        js.append(f'tl.to("#{cid}-c", {{ x: -12, duration: {2 * fr:.3f}, ease: "power2.out", yoyo: true, repeat: 3 }}, {sa:.3f});')
+        js.append(f'tl.to("#{cid}-ob", {{ opacity: 0.45, filter: "grayscale(0.8)", duration: {6 * fr:.3f} }}, {sa:.3f});')
+    st = p.get("stamp")
+    if st:
+        col = st.get("color", "#FF5A64")
+        body.append(f'<div id="{cid}-sp" style="position:absolute;left:{x + w - 340}px;top:{y - 80:.0f}px;padding:14px 34px;border-radius:24px;border:4px solid {col};'
+                    f'color:{col};font-family:{F_HEAD};font-weight:800;font-size:76px;letter-spacing:0.04em;line-height:1;background:rgba(12,16,14,0.55);'
+                    f'backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transform:rotate(-12deg);opacity:0;box-shadow:0 0 30px rgba(255,90,100,0.35)">{esc(st["t"])}</div>')
+        js.append(f'tl.fromTo("#{cid}-sp", {{ opacity: 0, scale: 2.2, rotation: -24 }}, {{ opacity: 1, scale: 1, rotation: -12, duration: {5 * fr:.3f}, ease: "power4.in" }}, {cx.s(st["at"]):.3f});')
+    js.append(f'tl.to("#{cid}-c", {{ opacity: 0, rotationY: {-side * 55}, x: {-side * 220}, filter: "blur(12px)", duration: {8 * fr:.3f}, ease: "power3.in", '
+              f'transformPerspective: 1400, transformOrigin: "50% 50% -1100px" }}, {max(0, dur - 8 * fr):.3f});')
+    js.append(f'tl.to("#{cid}-sp", {{ opacity: 0, duration: {5 * fr:.3f} }}, {max(0, dur - 6 * fr):.3f});' if st else "")
+    return scene_file(cx, cid, cx.H, f"#{cid}-all {{ position:absolute; inset:0; }}", f'<div id="{cid}-all">{"".join(body)}</div>', "\n".join(js), transparent=True)
+
+
+_DEF_FONTS = (F_EXT, F_SCRIPT, F_SERIF, F_HEAD)
 
 
 def _fonted(fn):
-    """Each video picks its own display / script / serif faces (design.brand font_ext, font_script, font_serif);
-    the module constants are the defaults (the Graphify set)."""
+    """Each video picks its own display / script / serif / heading faces (design.brand font_ext, font_script,
+    font_serif, font_head); the module constants are the defaults (the Graphify set)."""
     def run(cx, cid, dur, p):
-        global F_EXT, F_SCRIPT, F_SERIF
+        global F_EXT, F_SCRIPT, F_SERIF, F_HEAD
         b = cx.brand or {}
         F_EXT, F_SCRIPT, F_SERIF = b.get("font_ext", _DEF_FONTS[0]), b.get("font_script", _DEF_FONTS[1]), b.get("font_serif", _DEF_FONTS[2])
+        F_HEAD = b.get("font_head", _DEF_FONTS[3])
         return fn(cx, cid, dur, p)
     run.__name__, run.__doc__ = fn.__name__, fn.__doc__
     return run
 
 
 OVERLAYS = {"CardFan": ov_cardfan, "PerspText": ov_persptext, "Extrude": ov_extrude, "Bloom": ov_bloom, "GlassCard": ov_glasscard, "GraphWall": ov_graphwall,
-            "BrandScene": ov_brandscene, "CommentBox": ov_commentbox}
+            "BrandScene": ov_brandscene, "CommentBox": ov_commentbox, "Scene3D": ov_scene3d, "ObjCard": ov_objcard}
 
 OVERLAYS = {k: _fonted(v) for k, v in OVERLAYS.items()}
