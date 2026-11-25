@@ -1299,3 +1299,15 @@ from . import hf_gloss as _gs  # noqa: E402
 
 OVERLAY_FN.update(_gs.OVERLAYS)
 OVERLAYS |= set(_gs.OVERLAYS)
+
+# ---- kinetic-collage creator grammar: silhouettes, word stacks, frame card, paper tear, collage (lib/hf_kinetic.py, 2026-11-25)
+from . import hf_kinetic as _kn  # noqa: E402
+
+OVERLAY_FN.update(_kn.OVERLAYS)
+OVERLAYS |= set(_kn.OVERLAYS)
+
+# ---- talking-head reel grammar: two-tier lime captions, blinds, ring, REC frame, alerts, comment bar, 3D tile row (lib/hf_reel.py, 2026-11-25)
+from . import hf_reel as _rl  # noqa: E402
+
+OVERLAY_FN.update(_rl.OVERLAYS)
+OVERLAYS |= set(_rl.OVERLAYS)
