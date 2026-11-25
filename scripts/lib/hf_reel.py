@@ -72,11 +72,19 @@ def ov_cap2(cx: Ctx, cid: str, dur: float, p: dict) -> str:
                   f'<path d="M 4 30 C 70 22, 160 18, 296 8" fill="none" stroke="#FF2B2B" stroke-width="7" stroke-linecap="butt" pathLength="1" '
                   f'stroke-dasharray="1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 6px rgba(255,40,40,0.6))"/></svg>')
     sh = "text-shadow:0 3px 14px rgba(0,0,0,0.65);"
+    G = GLOW
+    if p.get("style") == "green":       # white key word on a dark green glass slab (the owner's brand colour)
+        G = "drop-shadow(0 10px 22px rgba(0,0,0,0.5))"
+        hero_css = (f"color:#FFFFFF;filter:{G};padding:0.06em 0.30em 0.02em;border-radius:0.16em;"
+                    "background:linear-gradient(180deg, rgba(14,96,54,0.94) 0%, rgba(1,50,32,0.96) 60%, rgba(0,34,20,0.97) 100%);"
+                    "box-shadow:inset 0 1px 0 rgba(160,255,200,0.35), inset 0 -2px 0 rgba(0,0,0,0.35);border:1px solid rgba(120,230,170,0.28)")
+    else:
+        hero_css = f"background:{LIME};-webkit-background-clip:text;background-clip:text;color:transparent;filter:{G};padding:0 0.04em"
     body = (f'<div style="position:absolute;left:{x:.0f}px;top:{y:.0f}px;transform:translate(-50%,-50%)"><div id="{cid}-g" style="text-align:center;white-space:nowrap">'
             f'<div style="font-family:{F_LEAD};font-weight:700;font-size:{ls:.0f}px;line-height:1;color:#fff;{sh}text-align:{p.get("lead_align", "left")};'
             f'margin-bottom:-{ls * 0.18:.0f}px;padding-left:0.3em">{lead}</div>'
             f'<div style="position:relative;display:inline-block"><div id="{cid}-h" style="opacity:0;font-family:{F_HERO};font-size:{size:.0f}px;line-height:1.08;'
-            f'background:{LIME};-webkit-background-clip:text;background-clip:text;color:transparent;filter:{GLOW};padding:0 0.04em">{esc(ht)}</div>{strike}</div>'
+            f'{hero_css}">{esc(ht)}</div>{strike}</div>'
             f'<div style="font-family:{F_LEAD};font-weight:600;font-size:{ls * 0.9:.0f}px;line-height:1;color:#F2F2F2;{sh}text-align:right;margin-top:-{ls * 0.12:.0f}px;'
             f'padding-right:0.3em">{tail}</div></div></div>')
     js = []
@@ -86,9 +94,9 @@ def ov_cap2(cx: Ctx, cid: str, dur: float, p: dict) -> str:
         js.append(f'tl.fromTo("#{cid}-t{i}", {{ opacity: 0, y: -8, filter: "blur(8px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", duration: {3 * fr:.3f}, ease: "power3.out" }}, {cx.s(at):.3f});')
     a = cx.s(ha)
     if a >= 2 * fr:                         # the key word shows dim for 2 frames before it slams in
-        js.append(f'tl.fromTo("#{cid}-h", {{ opacity: 0.32, filter: "blur(2px) {GLOW}" }}, {{ opacity: 0.32, duration: {2 * fr - 0.002:.3f}, immediateRender: false }}, {a - 2 * fr:.3f});')
+        js.append(f'tl.fromTo("#{cid}-h", {{ opacity: 0.32, filter: "blur(2px) {G}" }}, {{ opacity: 0.32, duration: {2 * fr - 0.002:.3f}, immediateRender: false }}, {a - 2 * fr:.3f});')
     js += [
-           f'tl.fromTo("#{cid}-h", {{ opacity: 0.32, scale: 1.25, filter: "blur(12px) {GLOW}" }}, {{ opacity: 1, scale: 1, filter: "blur(0px) {GLOW}", duration: {3 * fr:.3f}, ease: "power3.out", immediateRender: false }}, {a:.3f});',
+           f'tl.fromTo("#{cid}-h", {{ opacity: 0.32, scale: 1.25, filter: "blur(12px) {G}" }}, {{ opacity: 1, scale: 1, filter: "blur(0px) {G}", duration: {3 * fr:.3f}, ease: "power3.out", immediateRender: false }}, {a:.3f});',
            f'tl.to("#{cid}-g", {{ scale: 1.03, duration: {max(0.2, dur):.3f}, ease: "none" }}, 0);']
     if p.get("strike_at") is not None:
         js.append(f'draw("#{cid}-sk path", {cx.s(p["strike_at"]):.3f}, {6 * fr:.3f});')
@@ -221,7 +229,7 @@ def ov_comment(cx: Ctx, cid: str, dur: float, p: dict) -> str:
            f'<img src="{av}" alt="" style="width:100%;height:100%;object-fit:cover"></div>') if av else ""
     body = (f'<div id="{cid}-c" style="position:absolute;left:{W * 0.06:.0f}px;top:{p.get("y", 0.62) * H:.0f}px;display:flex;align-items:center;gap:20px">{avh}'
             f'<div id="{cid}-b" style="width:{W * 0.70:.0f}px;height:96px;border-radius:20px;display:flex;align-items:center;padding-left:34px;'
-            f'background:linear-gradient(90deg, rgba(14,52,24,0.92) 0%, rgba(78,122,30,0.80) 55%, rgba(30,60,16,0.35) 100%);border:1px solid rgba(200,255,120,0.22);'
+            f'background:linear-gradient(90deg, rgba(1,50,32,0.95) 0%, rgba(10,92,52,0.88) 55%, rgba(1,40,24,0.45) 100%);border:1px solid rgba(120,230,170,0.25);'
             f'box-shadow:0 18px 44px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);font:600 44px/1 {F_LEAD};color:#F6FFE9;white-space:nowrap;overflow:hidden">{spans}'
             f'<b id="{cid}-k" style="display:inline-block;width:3px;height:44px;background:#E9FFD0;margin-left:4px"></b></div></div>')
     js = [f'tl.fromTo("#{cid}-c", {{ opacity: 0, y: 30, filter: "blur(10px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", duration: {6 * fr:.3f}, ease: "expo.out" }}, {a:.3f});'] + js
@@ -269,6 +277,18 @@ def ov_obj(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     return scene_file(cx, cid, cx.H, "", f'<div id="{cid}-w" style="position:absolute;inset:0">{body}</div>', "\n".join(js), transparent=True)
 
 
+def ov_film(cx: Ctx, cid: str, dur: float, p: dict) -> str:
+    """A full-screen opaque 3D shot (Blender render as mp4). It arrives through a short zoom-blur (scale 1.10 -> 1, blur
+    16 -> 0 over 6 frames) and leaves on a hard cut."""
+    fr = 1 / cx.fps
+    src = p["src"] if p["src"].startswith("assets/") else f"assets/objects/{p['src']}"
+    body = (f'<div id="{cid}-w" style="position:absolute;inset:0;background:#00140A;opacity:0">'
+            + _vid(f"{cid}-v", src, 0, dur, "position:absolute;inset:0;width:100%;height:100%;object-fit:cover", p.get("media_start", 0.0)) + '</div>')
+    n = p.get("in_f", 6)
+    js = [f'tl.fromTo("#{cid}-w", {{ opacity: 0, scale: 1.10, filter: "blur(16px)" }}, {{ opacity: 1, scale: 1, filter: "blur(0px)", duration: {n * fr:.3f}, ease: "expo.out" }}, 0);']
+    return scene_file(cx, cid, cx.H, "", body, "\n".join(js), transparent=True)
+
+
 def _fonted(fn):
     def run(cx, cid, dur, p):
         _fonts(cx)
@@ -279,4 +299,4 @@ def _fonted(fn):
 
 OVERLAYS = {k: _fonted(v) for k, v in {
     "Cap2": ov_cap2, "Blinds": ov_blinds, "RingHead": ov_ringhead, "RecFrame": ov_recframe, "Pill": ov_pill, "Alerts": ov_alerts,
-    "Comment": ov_comment, "TileRow": ov_tilerow, "Obj": ov_obj}.items()}
+    "Comment": ov_comment, "TileRow": ov_tilerow, "Obj": ov_obj, "Film": ov_film}.items()}

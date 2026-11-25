@@ -899,7 +899,7 @@ def hf_render(edl, d, caps, cap_ys, pic, fps, W, H, total, rdir, project, previe
                 shutil.copy2(f, dst)
     if (project / "objects").exists():          # rendered 3D objects with alpha (webm) used by Object3D (lib/hf_spec.py)
         (hf / "assets" / "objects").mkdir(parents=True, exist_ok=True)
-        for f in (project / "objects").glob("*.webm"):
+        for f in [*(project / "objects").glob("*.webm"), *(project / "objects").glob("*.mp4")]:   # mp4: opaque Film shots (hf_reel)
             dst = hf / "assets" / "objects" / f.name
             if not dst.exists() or dst.stat().st_mtime < f.stat().st_mtime:
                 shutil.copy2(f, dst)
