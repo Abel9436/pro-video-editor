@@ -1103,7 +1103,8 @@ def main() -> None:
             st0 = float(col0.get("strength", 0.0))
             hal0 = float(col0.get("halation", 0.0))
             fall0, vig0 = float(col0.get("falloff", 0.0)), float(col0.get("vignette", 0.0))
-            if (lut0 is not None and st0 > 0) or hal0 > 0 or fall0 > 0 or vig0 > 0:
+            ovl0 = col0.get("overlay")     # {file (project-relative image), mode (ffmpeg blend mode, default screen), opacity}
+            if (lut0 is not None and st0 > 0) or hal0 > 0 or fall0 > 0 or vig0 > 0 or ovl0:
                 # grade the footage only; graphics keep their exact brand colours
                 fc, lab = [], "[0:v]"
                 if lut0 is not None and st0 > 0:
@@ -1120,6 +1121,14 @@ def main() -> None:
                 if vig0 > 0:      # vignette angle in radians (PI/4 ~ 0.785)
                     fc.append(f"{lab}vignette=angle={vig0:.3f}:mode=forward[vg]")
                     lab = "[vg]"
+                if ovl0:          # a still texture or light over the footage (e.g. a glow gradient), under every graphic
+                    src_ov = Path(ovl0["file"]) if Path(ovl0["file"]).is_absolute() else project / ovl0["file"]
+                    if not src_ov.exists():
+                        fail(f"color.overlay file not found: {src_ov}")
+                    shutil.copy2(src_ov, rdir / f"overlay{src_ov.suffix}")
+                    fc.append(f"movie=overlay{src_ov.suffix},scale={W}:{H},format=gbrp[ovi];{lab}format=gbrp[ovb];"
+                              f"[ovb][ovi]blend=all_mode={ovl0.get('mode', 'screen')}:all_opacity={float(ovl0.get('opacity', 1.0)):.3f}[ovo]")
+                    lab = "[ovo]"
                 fc.append(f"{lab}format=yuv420p[v]")
                 run(["ffmpeg", "-v", "error", "-y", "-i", pic.name, "-filter_complex", ";".join(fc),
                      "-map", "[v]", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "picture_graded.mp4"], cwd=rdir)
