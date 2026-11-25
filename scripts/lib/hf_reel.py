@@ -279,13 +279,19 @@ def ov_obj(cx: Ctx, cid: str, dur: float, p: dict) -> str:
 
 def ov_film(cx: Ctx, cid: str, dur: float, p: dict) -> str:
     """A full-screen opaque 3D shot (Blender render as mp4). It arrives through a short zoom-blur (scale 1.10 -> 1, blur
-    16 -> 0 over 6 frames) and leaves on a hard cut."""
+    16 -> 0 over 6 frames) and leaves through a zoom-through (scale 1 -> 1.35, blur 0 -> 22, brightness 1 -> 1.6 over the
+    last `out_f` frames, 5 by default, expo.in), so the next shot can land pushed in and carry the motion on.
+    `out_f: 0` gives a hard cut."""
     fr = 1 / cx.fps
     src = p["src"] if p["src"].startswith("assets/") else f"assets/objects/{p['src']}"
     body = (f'<div id="{cid}-w" style="position:absolute;inset:0;background:#00140A;opacity:0">'
             + _vid(f"{cid}-v", src, 0, dur, "position:absolute;inset:0;width:100%;height:100%;object-fit:cover", p.get("media_start", 0.0)) + '</div>')
     n = p.get("in_f", 6)
     js = [f'tl.fromTo("#{cid}-w", {{ opacity: 0, scale: 1.10, filter: "blur(16px)" }}, {{ opacity: 1, scale: 1, filter: "blur(0px)", duration: {n * fr:.3f}, ease: "expo.out" }}, 0);']
+    m = p.get("out_f", 5)
+    if m:
+        js.append(f'tl.fromTo("#{cid}-w", {{ scale: 1, filter: "blur(0px) brightness(1)" }}, {{ scale: 1.35, filter: "blur(22px) brightness(1.6)", '
+                  f'duration: {m * fr:.3f}, ease: "expo.in", immediateRender: false }}, {max(n * fr, dur - m * fr):.3f});')
     return scene_file(cx, cid, cx.H, "", body, "\n".join(js), transparent=True)
 
 

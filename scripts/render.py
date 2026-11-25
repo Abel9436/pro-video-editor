@@ -1102,7 +1102,8 @@ def main() -> None:
             lut0 = look_path(col0.get("look"), SKILL)
             st0 = float(col0.get("strength", 0.0))
             hal0 = float(col0.get("halation", 0.0))
-            if (lut0 is not None and st0 > 0) or hal0 > 0:
+            fall0, vig0 = float(col0.get("falloff", 0.0)), float(col0.get("vignette", 0.0))
+            if (lut0 is not None and st0 > 0) or hal0 > 0 or fall0 > 0 or vig0 > 0:
                 # grade the footage only; graphics keep their exact brand colours
                 fc, lab = [], "[0:v]"
                 if lut0 is not None and st0 > 0:
@@ -1112,6 +1113,13 @@ def main() -> None:
                 if hal0 > 0:
                     fc.append(halation_filter(lab, hal0, H))
                     lab = "[hal]"
+                if fall0 > 0:     # a bright ceiling pulled down: top edge x(1-falloff), easing to 1 at 42 % of the height (STARTING DEFAULT)
+                    fc.append(f"color=white:s={W}x{H}:d=0.04,format=gray,geq=lum='255*(1-{fall0:.3f}*max(0\\,1-Y/(0.42*H)))',format=gbrp[fg0];"
+                              f"{lab}format=gbrp[fa];[fa][fg0]blend=all_mode=multiply[fo]")   # blend repeats the one gradient frame
+                    lab = "[fo]"
+                if vig0 > 0:      # vignette angle in radians (PI/4 ~ 0.785)
+                    fc.append(f"{lab}vignette=angle={vig0:.3f}:mode=forward[vg]")
+                    lab = "[vg]"
                 fc.append(f"{lab}format=yuv420p[v]")
                 run(["ffmpeg", "-v", "error", "-y", "-i", pic.name, "-filter_complex", ";".join(fc),
                      "-map", "[v]", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "picture_graded.mp4"], cwd=rdir)
