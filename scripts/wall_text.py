@@ -319,6 +319,8 @@ def render_item(item: dict, spec: dict, base: Path, preview: bool, still: float 
 
 
 def main(argv: list[str] | None = None) -> None:
+    for _s in (sys.stdout, sys.stderr):        # the help and the JSON carry Ethiopic: a cp1252 console crashed --help
+        _s.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("spec", type=Path)
     ap.add_argument("--only", nargs="*")

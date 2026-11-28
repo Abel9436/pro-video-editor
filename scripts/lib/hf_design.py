@@ -1001,7 +1001,9 @@ def root_file(cx: Ctx, T: float, layout: list[dict], scenes: list[dict], overlay
             f'data-track-index="40" data-track-kind="captions" data-width="{W}" data-height="{H}" style="position:absolute;inset:0;z-index:10"></div>')
 
     # ---- layouts: camera state per span (cuts are hard sets; a zoomed span eases in)
-    cams = "#cam, #camfg" if has_fg else "#cam"
+    # overlays tracked to the footage (`cam: true`: hand-held objects, wall text, an orbit round the head) ride the
+    # camera's punch-ins with the picture, or they slide off what they are pinned to
+    cams = ", ".join(["#cam", *(["#camfg"] if has_fg else []), *(f"#{o['cid']}" for o in overlays if o.get("cam"))])
     for L in layout:
         s = cx.s(L["s"])
         z = float(L.get("zoom", 1) or 1)
@@ -1186,7 +1188,8 @@ def build(d: dict, caps: list[dict], cap_ys: list[float], fps: float, W: int, H:
         cid = f"o{i:02d}{o['type'].lower()}"
         dur = (o["e"] - o["s"]) / fps
         (hf / "compositions" / f"{cid}.html").write_text(OVERLAY_FN[o["type"]](cx, cid, dur, o.get("p", {})), encoding="utf-8")
-        overlays.append({"cid": cid, "s": cx.s(o["s"]), "d": round(dur, 4), "behind": bool(o.get("behind")) and bool(assets.get("fg"))})
+        overlays.append({"cid": cid, "s": cx.s(o["s"]), "d": round(dur, 4), "behind": bool(o.get("behind")) and bool(assets.get("fg")),
+                         "cam": bool(o.get("cam"))})
     size = float(d.get("caption_size") or 66)
     style = d.get("caption_style", "phrase")
     from .hf_ae import captions_ink
